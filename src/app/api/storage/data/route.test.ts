@@ -1,0 +1,735 @@
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { NextRequest } from "next/server";
+import type { VocabularyData } from "@/lib/vocabulary/types";
+import { V2_STORAGE_CLIENT_REVISION_HEADER, v2ClientContractHeaders } from "@/lib/security/v2-client-contract";
+
+const repositoryMocks = vi.hoisted(() => ({
+  createPostgresPerson: vi.fn(),
+  createPostgresRepository: vi.fn(),
+  getPostgresVocabularyDataSnapshot: vi.fn(),
+}));
+const repositoryMethodMocks = vi.hoisted(() => ({
+  deduplicateItems: vi.fn(),
+  deleteItem: vi.fn(),
+  deleteItems: vi.fn(),
+  rollbackImportBatch: vi.fn(),
+  startFreshInTrack: vi.fn(),
+  resetToday: vi.fn(),
+  rollbackEvent: vi.fn(),
+  commitImportCandidates: vi.fn(),
+}));
+const transactionOutcomeMock = vi.hoisted(() => vi.fn(() => false));
+const mutationCommittedMock = vi.hoisted(() => vi.fn(() => false));
+const verifyCloudflareAccess = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/security/cloudflare-access", () => ({ verifyCloudflareAccess }));
+vi.mock("@/lib/storage/postgres/client", () => ({
+  isPostgresTransactionOutcomeUnknown: transactionOutcomeMock,
+  isPostgresMutationCommitted: mutationCommittedMock,
+}));
+
+vi.mock("@/lib/storage/postgres/repository", () => repositoryMocks);
+
+const originalEnv = { ...process.env };
+const runtimeEnvKeys = [
+  "MIMI_STORAGE_RUNTIME",
+  "MIMI_ENABLE_STORAGE_UI_WRITES",
+  "MIMI_BASIC_AUTH_USER",
+  "MIMI_BASIC_AUTH_PASSWORD",
+  "MIMI_PRODUCTION_CUTOVER_MODE",
+  "MIMI_PRODUCTION_AUTH_MODE",
+  "VERCEL_ENV",
+  "NODE_ENV",
+  "STAGE5F_DATABASE_TARGET",
+] as const;
+
+const basicAuthUser = "mimi";
+const basicAuthPassphrase = "test-production-password";
+const basicAuthorization = `Basic ${Buffer.from(`${basicAuthUser}:${basicAuthPassphrase}`).toString("base64")}`;
+
+const personId = "11111111-1111-4111-8111-111111111111";
+const fakeData: VocabularyData = {
+  schemaVersion: 6,
+  people: [],
+  selectedPersonId: personId,
+  items: [],
+  importBatches: [],
+  reviewStates: [],
+  reviewEvents: [],
+  settingsByPerson: [],
+  dailyStudyDefaults: [],
+  dailyStudyPlans: [],
+  vocabularyCreationFacts: [],
+  vocabularyCreationReversals: [],
+  aiRuns: [],
+  aiEnrichmentDrafts: [],
+  vocabularyRelations: [],
+  updatedAt: "2026-07-09T00:00:00.000Z",
+};
+
+function setRuntimeEnv(
+  overrides: Record<string, string | undefined>,
+  options: { withProductionAuth?: boolean } = {},
+) {
+  const mutableEnv = process.env as Record<string, string | undefined>;
+
+  for (const key of runtimeEnvKeys) {
+    delete mutableEnv[key];
+  }
+
+  mutableEnv.NODE_ENV = "test";
+
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === undefined) {
+      delete mutableEnv[key];
+    } else {
+      mutableEnv[key] = value;
+    }
+  }
+
+  if (mutableEnv.VERCEL_ENV === "production" && options.withProductionAuth !== false) {
+    mutableEnv.MIMI_BASIC_AUTH_USER = basicAuthUser;
+    Reflect.set(mutableEnv, "MIMI_BASIC_AUTH_PASSWORD", basicAuthPassphrase);
+    mutableEnv.MIMI_PRODUCTION_CUTOVER_MODE ??= "live";
+  }
+}
+
+function dataGetRequest(
+  url = `https://mimi.example/api/storage/data?selectedPersonId=${personId}`,
+  headers: Record<string, string> = { authorization: basicAuthorization },
+) {
+  return {
+    nextUrl: new URL(url),
+    headers: new Headers(headers),
+  } as NextRequest;
+}
+
+function dataPostRequest(
+  body: unknown,
+  headers: Record<string, string> = { authorization: basicAuthorization },
+) {
+  return new Request("https://mimi.example/api/storage/data", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...v2ClientContractHeaders(),
+      ...headers,
+    },
+    body: JSON.stringify(body),
+  }) as NextRequest;
+}
+
+describe("/api/storage/data runtime contract", () => {
+  beforeEach(() => {
+    verifyCloudflareAccess.mockReset().mockResolvedValue("unauthorized");
+    transactionOutcomeMock.mockReset().mockReturnValue(false);
+    mutationCommittedMock.mockReset().mockReturnValue(false);
+    repositoryMocks.createPostgresPerson.mockReset();
+    repositoryMocks.createPostgresRepository.mockReset();
+    repositoryMocks.getPostgresVocabularyDataSnapshot.mockReset();
+    repositoryMethodMocks.deleteItem.mockReset();
+    repositoryMethodMocks.deleteItems.mockReset();
+    repositoryMethodMocks.deduplicateItems.mockReset();
+    repositoryMethodMocks.rollbackImportBatch.mockReset();
+    repositoryMethodMocks.startFreshInTrack.mockReset();
+    repositoryMethodMocks.resetToday.mockReset();
+    repositoryMethodMocks.rollbackEvent.mockReset();
+    repositoryMethodMocks.commitImportCandidates.mockReset();
+    repositoryMocks.createPostgresRepository.mockReturnValue({
+      people: {
+        listPeople: vi.fn(),
+      },
+      vocabulary: {
+        deduplicateItems: repositoryMethodMocks.deduplicateItems,
+        deleteItem: repositoryMethodMocks.deleteItem,
+        deleteItems: repositoryMethodMocks.deleteItems,
+        rollbackImportBatch: repositoryMethodMocks.rollbackImportBatch,
+        startFreshInTrack: repositoryMethodMocks.startFreshInTrack,
+        commitImportCandidates: repositoryMethodMocks.commitImportCandidates,
+      },
+      review: {
+        resetToday: repositoryMethodMocks.resetToday,
+        rollbackEvent: repositoryMethodMocks.rollbackEvent,
+      },
+    });
+    repositoryMocks.getPostgresVocabularyDataSnapshot.mockResolvedValue(fakeData);
+    setRuntimeEnv({});
+  });
+
+  afterAll(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it("blocks Cloudflare-denied reads and writes before opening the repository", async () => {
+    setRuntimeEnv({
+      VERCEL_ENV: "production",
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      MIMI_PRODUCTION_AUTH_MODE: "cloudflare",
+    });
+    const { GET, POST } = await import("./route");
+    const read = await GET(dataGetRequest());
+    const write = await POST(dataPostRequest({
+      selectedPersonId: personId,
+      mutation: { type: "people.select", personId },
+    }));
+
+    expect(read.status).toBe(401);
+    expect(write.status).toBe(401);
+    expect(read.headers.get("cache-control")).toBe("no-store");
+    expect(write.headers.get("cache-control")).toBe("no-store");
+    expect(repositoryMocks.createPostgresRepository).not.toHaveBeenCalled();
+    expect(repositoryMocks.createPostgresPerson).not.toHaveBeenCalled();
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("retains the storage client revision gate after Cloudflare admission", async () => {
+    setRuntimeEnv({
+      VERCEL_ENV: "production",
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      MIMI_PRODUCTION_AUTH_MODE: "cloudflare",
+    });
+    verifyCloudflareAccess.mockResolvedValue("allowed");
+    const request = dataPostRequest({
+      selectedPersonId: personId,
+      mutation: { type: "people.select", personId },
+    }, {});
+    request.headers.delete(V2_STORAGE_CLIENT_REVISION_HEADER);
+    const { POST } = await import("./route");
+    const response = await POST(request);
+
+    expect(response.status).toBe(428);
+    expect(await response.json()).toMatchObject({ reason: "storage-client-upgrade-required" });
+    expect(repositoryMocks.createPostgresRepository).not.toHaveBeenCalled();
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("keeps the trusted-group data shape after Cloudflare admission", async () => {
+    setRuntimeEnv({
+      VERCEL_ENV: "production",
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      MIMI_PRODUCTION_AUTH_MODE: "cloudflare",
+    });
+    verifyCloudflareAccess.mockResolvedValue("allowed");
+    const { GET } = await import("./route");
+    const response = await GET(dataGetRequest(undefined, {}));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("vary")).toContain("Cf-Access-Jwt-Assertion");
+    expect(await response.json()).toMatchObject({ data: fakeData });
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).toHaveBeenCalledWith(
+      personId,
+      expect.any(String),
+    );
+  });
+
+  it.each([undefined, "v2.2", "unknown"])("rejects an incompatible storage client before any write or snapshot read (%s)", async (revision) => {
+    setRuntimeEnv({ MIMI_STORAGE_RUNTIME: "postgres-production", VERCEL_ENV: "production", NODE_ENV: "production" });
+    const request = dataPostRequest({ selectedPersonId: personId, mutation: {
+      type: "vocabulary.delete", vocabularyItemId: "22222222-2222-4222-8222-222222222222",
+      now: "2026-09-13T09:00:00.000Z", timezone: "Australia/Melbourne",
+    } });
+    if (revision === undefined) request.headers.delete(V2_STORAGE_CLIENT_REVISION_HEADER);
+    else request.headers.set(V2_STORAGE_CLIENT_REVISION_HEADER, revision);
+    const { POST } = await import("./route");
+    const response = await POST(request);
+    expect(response.status).toBe(428);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toMatchObject({
+      ok: false, mutationOutcome: "rejected", reason: "storage-client-upgrade-required",
+      error: expect.stringContaining("reload this page"),
+    });
+    expect(repositoryMocks.createPostgresRepository).not.toHaveBeenCalled();
+    expect(repositoryMocks.createPostgresPerson).not.toHaveBeenCalled();
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+    expect(repositoryMethodMocks.deleteItem).not.toHaveBeenCalled();
+  });
+
+  it("keeps the same revision guard on enabled Preview writes", async () => {
+    setRuntimeEnv({ MIMI_STORAGE_RUNTIME: "postgres-preview", MIMI_ENABLE_STORAGE_UI_WRITES: "true", VERCEL_ENV: "preview", NODE_ENV: "production" });
+    const request = dataPostRequest({ selectedPersonId: personId, mutation: { type: "people.select", personId } }, {
+      "x-mimi-ui-storage-write": "allow-dev-preview-ui-write",
+    });
+    request.headers.delete(V2_STORAGE_CLIENT_REVISION_HEADER);
+    const { POST } = await import("./route");
+    const response = await POST(request);
+    expect(response.status).toBe(428);
+    expect(await response.json()).toMatchObject({ reason: "storage-client-upgrade-required" });
+    expect(repositoryMocks.createPostgresRepository).not.toHaveBeenCalled();
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("reports a committed mutation when its following snapshot read fails", async () => {
+    setRuntimeEnv({ MIMI_STORAGE_RUNTIME: "postgres-production", VERCEL_ENV: "production", NODE_ENV: "production" });
+    repositoryMethodMocks.deleteItem.mockResolvedValue(undefined);
+    repositoryMocks.getPostgresVocabularyDataSnapshot.mockRejectedValue(new Error("readback unavailable"));
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({ selectedPersonId: personId, mutation: {
+      type: "vocabulary.delete", vocabularyItemId: "22222222-2222-4222-8222-222222222222",
+      now: "2026-09-13T09:00:00.000Z", timezone: "Australia/Melbourne",
+    } }, { authorization: basicAuthorization, "x-mimi-storage-request-id": "fixture-operation" }));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toMatchObject({ ok: true, status: "committed-needs-refresh", mutationOutcome: "committed", selectedPersonId: personId, requestId: "fixture-operation" });
+    expect(repositoryMethodMocks.deleteItem).toHaveBeenCalledTimes(1);
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([false, true])("distinguishes a rejected transaction from an unknown COMMIT outcome (%s)", async (unknownOutcome) => {
+    setRuntimeEnv({ MIMI_STORAGE_RUNTIME: "postgres-production", VERCEL_ENV: "production", NODE_ENV: "production" });
+    transactionOutcomeMock.mockReturnValue(unknownOutcome);
+    repositoryMethodMocks.deleteItem.mockRejectedValue(new Error("fixture transaction failure"));
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({ selectedPersonId: personId, mutation: {
+      type: "vocabulary.delete", vocabularyItemId: "22222222-2222-4222-8222-222222222222",
+      now: "2026-09-13T09:00:00.000Z", timezone: "Australia/Melbourne",
+    } }));
+    expect(response.status).toBe(400);
+    const payload = await response.json();
+    expect(payload).toMatchObject({ ok: false, mutationOutcome: unknownOutcome ? "unknown" : "rejected" });
+    if (unknownOutcome) expect(payload.error).not.toContain("fixture transaction failure");
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("acknowledges an import whose internal readback failed after commit", async () => {
+    setRuntimeEnv({ MIMI_STORAGE_RUNTIME: "postgres-production", VERCEL_ENV: "production", NODE_ENV: "production" });
+    mutationCommittedMock.mockReturnValue(true);
+    repositoryMethodMocks.commitImportCandidates.mockRejectedValue(new Error("marked internal readback failure"));
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({ selectedPersonId: personId, mutation: {
+      type: "import.commitCandidates", batchInput: { sourceType: "paste" }, candidates: [], acceptedTempIds: [],
+      now: "2026-09-13T09:00:00.000Z", timezone: "Australia/Melbourne",
+    } }));
+    expect(response.status).toBe(202);
+    expect(await response.json()).toMatchObject({ ok: true, mutationOutcome: "committed", selectedPersonId: personId });
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("requires an existing selected learner before mutation and never creates one as a side effect", async () => {
+    setRuntimeEnv({ MIMI_STORAGE_RUNTIME: "postgres-production", VERCEL_ENV: "production", NODE_ENV: "production" });
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({ mutation: {
+      type: "vocabulary.delete", vocabularyItemId: "22222222-2222-4222-8222-222222222222",
+      now: "2026-09-13T09:00:00.000Z", timezone: "Australia/Melbourne",
+    } }));
+    expect(response.status).toBe(400);
+    expect(repositoryMocks.createPostgresPerson).not.toHaveBeenCalled();
+    expect(repositoryMethodMocks.deleteItem).not.toHaveBeenCalled();
+  });
+
+  it("rejects Production data reads unless postgres-production is configured", async () => {
+    setRuntimeEnv({
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const { GET } = await import("./route");
+    const response = await GET(dataGetRequest());
+    const payload = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(payload).toMatchObject({
+      ok: false,
+      status: "disabled",
+      reason: "production-postgres-runtime-not-enabled",
+      runtime: {
+        mode: "local",
+      },
+    });
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("fails closed before Production runtime inspection when Basic Auth is missing", async () => {
+    setRuntimeEnv(
+      {
+        MIMI_STORAGE_RUNTIME: "postgres-production",
+        VERCEL_ENV: "production",
+        NODE_ENV: "production",
+      },
+      { withProductionAuth: true },
+    );
+    const { GET } = await import("./route");
+    const response = await GET(dataGetRequest(undefined, {}));
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get("www-authenticate")).toContain("Mimi Vocabulary");
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("rejects postgres-production outside Production", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "preview",
+      NODE_ENV: "production",
+    });
+    const { GET } = await import("./route");
+    const response = await GET(dataGetRequest());
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload).toMatchObject({
+      ok: false,
+      status: "disabled",
+      reason: "postgres-production-runtime-not-allowed",
+      runtime: {
+        mode: "postgres-production",
+      },
+    });
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("allows Production reads through postgres-production", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const { GET } = await import("./route");
+    const response = await GET(dataGetRequest());
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("server-timing")).toMatch(
+      /^mimi_storage;dur=\d+$/,
+    );
+    expect(payload).toMatchObject({
+      ok: true,
+      status: "ready",
+      runtime: {
+        mode: "postgres-production",
+      },
+      data: fakeData,
+    });
+    expect(repositoryMocks.getPostgresVocabularyDataSnapshot).toHaveBeenCalledWith(
+      personId,
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+    );
+  });
+
+  it("routes an explicit start-fresh Track change", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const { POST } = await import("./route");
+    const response = await POST(
+      dataPostRequest({
+        selectedPersonId: personId,
+        mutation: {
+          type: "vocabulary.startFreshInTrack",
+          vocabularyItemId: "22222222-2222-4222-8222-222222222222",
+          targetTrack: "active",
+          now: "2026-07-15T08:00:00.000Z",
+          timezone: "Australia/Melbourne",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(repositoryMethodMocks.startFreshInTrack).toHaveBeenCalledWith(
+      expect.objectContaining({
+        personId,
+        now: "2026-07-15T08:00:00.000Z",
+        timezone: "Australia/Melbourne",
+      }),
+      "22222222-2222-4222-8222-222222222222",
+      "active",
+    );
+  });
+
+  it("keeps Preview writes behind the preview-only UI write gate", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-preview",
+      VERCEL_ENV: "preview",
+      NODE_ENV: "production",
+    });
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({
+      selectedPersonId: personId,
+      mutation: {
+        type: "people.select",
+        personId,
+      },
+    }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(payload).toMatchObject({
+      ok: false,
+      status: "disabled",
+      reason: "ui-writes-not-enabled",
+      runtime: {
+        mode: "postgres-preview",
+      },
+    });
+  });
+
+  it("does not require the preview write flag or header for postgres-production mutations", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({
+      selectedPersonId: personId,
+      mutation: {
+        type: "people.select",
+        personId,
+      },
+    }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("server-timing")).toMatch(
+      /^mimi_storage;dur=\d+$/,
+    );
+    expect(payload).toMatchObject({
+      ok: true,
+      status: "ready",
+      runtime: {
+        mode: "postgres-production",
+      },
+      data: fakeData,
+    });
+  });
+
+  it("routes hard delete mutations through the Postgres repository parity method", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({
+      selectedPersonId: personId,
+      mutation: {
+        type: "vocabulary.delete",
+        vocabularyItemId: "22222222-2222-4222-8222-222222222222",
+        now: "2026-07-09T00:00:00.000Z",
+        timezone: "Australia/Melbourne",
+      },
+    }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      ok: true,
+      status: "ready",
+      runtime: {
+        mode: "postgres-production",
+      },
+      data: fakeData,
+    });
+    expect(repositoryMethodMocks.deleteItem).toHaveBeenCalledWith(
+      {
+        personId,
+        now: "2026-07-09T00:00:00.000Z",
+        timezone: "Australia/Melbourne",
+      },
+      "22222222-2222-4222-8222-222222222222",
+    );
+  });
+
+  describe("selected vocabulary deletion", () => {
+    const vocabularyItemIds = [
+      "a2222222-2222-4222-8222-222222222222",
+      "33333333-3333-4333-8333-333333333333",
+    ];
+    const mutation = {
+      type: "vocabulary.deleteMany",
+      vocabularyItemIds,
+      now: "2026-10-17T09:00:00.000Z",
+      timezone: "Australia/Melbourne",
+    };
+
+    beforeEach(() => {
+      setRuntimeEnv({
+        MIMI_STORAGE_RUNTIME: "postgres-production",
+        VERCEL_ENV: "production",
+        NODE_ENV: "production",
+      });
+      repositoryMethodMocks.deleteItems.mockResolvedValue({ deletedItemsCount: 2 });
+    });
+
+    it("forwards the exact selection once and returns one refreshed snapshot", async () => {
+      const { POST } = await import("./route");
+      const response = await POST(dataPostRequest({ selectedPersonId: personId, mutation }));
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ ok: true, mutationOutcome: "committed", data: fakeData });
+      expect(repositoryMethodMocks.deleteItems).toHaveBeenCalledExactlyOnceWith(
+        { personId, now: mutation.now, timezone: mutation.timezone }, vocabularyItemIds,
+      );
+      expect(repositoryMethodMocks.deleteItem).not.toHaveBeenCalled();
+      expect(repositoryMethodMocks.rollbackImportBatch).not.toHaveBeenCalled();
+      expect(repositoryMocks.getPostgresVocabularyDataSnapshot).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      { label: "missing IDs", ids: undefined },
+      { label: "non-array IDs", ids: vocabularyItemIds[0] },
+      { label: "empty IDs", ids: [] },
+      { label: "blank ID", ids: [""] },
+      { label: "invalid ID", ids: ["not-an-id"] },
+      { label: "non-string ID", ids: [12] },
+      { label: "duplicate ID", ids: [vocabularyItemIds[0], vocabularyItemIds[0]] },
+      { label: "duplicate UUID casing", ids: [vocabularyItemIds[0], vocabularyItemIds[0].toUpperCase()] },
+    ])("rejects $label before repository access", async ({ ids }) => {
+      const { POST } = await import("./route");
+      const response = await POST(dataPostRequest({
+        selectedPersonId: personId, mutation: { ...mutation, vocabularyItemIds: ids },
+      }));
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({ ok: false, mutationOutcome: "rejected" });
+      expect(repositoryMocks.createPostgresRepository).not.toHaveBeenCalled();
+      expect(repositoryMethodMocks.deleteItems).not.toHaveBeenCalled();
+      expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+    });
+
+    it.each(["auth", "client-revision", "person"])("preserves the %s guard before deletion", async (guard) => {
+      const { POST } = await import("./route");
+      const request = dataPostRequest({
+        ...(guard === "person" ? {} : { selectedPersonId: personId }), mutation,
+      });
+      if (guard === "auth") request.headers.delete("authorization");
+      if (guard === "client-revision") request.headers.delete(V2_STORAGE_CLIENT_REVISION_HEADER);
+      const response = await POST(request);
+
+      expect(response.status).toBe(guard === "auth" ? 401 : guard === "client-revision" ? 428 : 400);
+      expect(repositoryMocks.createPostgresRepository).not.toHaveBeenCalled();
+      expect(repositoryMethodMocks.deleteItems).not.toHaveBeenCalled();
+      expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+    });
+
+    it("acknowledges committed deletion when snapshot readback fails", async () => {
+      repositoryMocks.getPostgresVocabularyDataSnapshot.mockRejectedValue(new Error("fixture readback failure"));
+      const { POST } = await import("./route");
+      const response = await POST(dataPostRequest({ selectedPersonId: personId, mutation }));
+
+      expect(response.status).toBe(202);
+      expect(await response.json()).toMatchObject({
+        ok: true, status: "committed-needs-refresh", mutationOutcome: "committed", selectedPersonId: personId,
+      });
+      expect(repositoryMethodMocks.deleteItems).toHaveBeenCalledTimes(1);
+      expect(repositoryMocks.getPostgresVocabularyDataSnapshot).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([false, true])("preserves rejected versus unknown transaction outcome (%s)", async (unknownOutcome) => {
+      transactionOutcomeMock.mockReturnValue(unknownOutcome);
+      repositoryMethodMocks.deleteItems.mockRejectedValue(new Error("fixture deletion failure"));
+      const { POST } = await import("./route");
+      const response = await POST(dataPostRequest({ selectedPersonId: personId, mutation }));
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({
+        ok: false, mutationOutcome: unknownOutcome ? "unknown" : "rejected",
+      });
+      expect(repositoryMethodMocks.deleteItems).toHaveBeenCalledTimes(1);
+      expect(repositoryMocks.getPostgresVocabularyDataSnapshot).not.toHaveBeenCalled();
+    });
+  });
+
+  it("routes a count-bound duplicate cleanup confirmation through Postgres", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const confirmation = {
+      fingerprint: "vocabulary-deduplication-v1:test",
+      duplicateGroupsCount: 2,
+      deletedItemsCount: 3,
+      deletedReviewStatesCount: 1,
+      deletedReviewEventsCount: 4,
+      deletedAiDraftsCount: 1,
+      deletedVocabularyRelationsCount: 2,
+      detachedAiRunsCount: 1,
+      affectedImportBatchesCount: 2,
+      groupsWithMultipleHistoriesCount: 1,
+    };
+    const { POST } = await import("./route");
+    const response = await POST(dataPostRequest({
+      selectedPersonId: personId,
+      mutation: {
+        type: "vocabulary.deduplicate",
+        confirmation,
+        now: "2026-07-24T00:00:00.000Z",
+        timezone: "Australia/Melbourne",
+      },
+    }));
+
+    expect(response.status).toBe(200);
+    expect(repositoryMethodMocks.deduplicateItems).toHaveBeenCalledWith(
+      {
+        personId,
+        now: "2026-07-24T00:00:00.000Z",
+        timezone: "Australia/Melbourne",
+      },
+      confirmation,
+    );
+  });
+
+  it("routes rollback and review repair mutations through repository parity methods", async () => {
+    setRuntimeEnv({
+      MIMI_STORAGE_RUNTIME: "postgres-production",
+      VERCEL_ENV: "production",
+      NODE_ENV: "production",
+    });
+    const { POST } = await import("./route");
+    const common = {
+      selectedPersonId: personId,
+    };
+    const now = "2026-07-09T00:00:00.000Z";
+    const timezone = "Australia/Melbourne";
+
+    await POST(dataPostRequest({
+      ...common,
+      mutation: {
+        type: "import.rollbackBatch",
+        importBatchId: "33333333-3333-4333-8333-333333333333",
+        now,
+        timezone,
+      },
+    }));
+    await POST(dataPostRequest({
+      ...common,
+      mutation: {
+        type: "review.resetToday",
+        now,
+        timezone,
+      },
+    }));
+    await POST(dataPostRequest({
+      ...common,
+      mutation: {
+        type: "review.rollbackEvent",
+        reviewEventId: "44444444-4444-4444-8444-444444444444",
+        now,
+        timezone,
+      },
+    }));
+
+    expect(repositoryMethodMocks.rollbackImportBatch).toHaveBeenCalledWith(
+      {
+        personId,
+        now,
+        timezone,
+      },
+      "33333333-3333-4333-8333-333333333333",
+    );
+    expect(repositoryMethodMocks.resetToday).toHaveBeenCalledWith({
+      personId,
+      now,
+      timezone,
+    });
+    expect(repositoryMethodMocks.rollbackEvent).toHaveBeenCalledWith(
+      {
+        personId,
+        now,
+        timezone,
+      },
+      "44444444-4444-4444-8444-444444444444",
+    );
+  });
+});

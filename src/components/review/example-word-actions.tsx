@@ -1,0 +1,578 @@
+"use client";
+
+import { BookPlus, Save, Sparkles, Volume2, X } from "lucide-react";
+import type { FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { PressableButton } from "@/components/ui/motion-primitives";
+import type { VocabularyStorageMutation } from "@/components/vocabulary/use-vocabulary-data";
+import { cancelEnglishSpeech, speakEnglishText } from "@/lib/ui/speech-synthesis";
+import { findSelectedPersonVocabularyDuplicate } from "@/lib/vocabulary/context-word-actions";
+import { segmentEnglishExample } from "@/lib/vocabulary/example-segmentation";
+import { normalizeTextList } from "@/lib/vocabulary/normalize";
+import { addVocabularyItem } from "@/lib/vocabulary/repository";
+import type { LearningTrack, VocabularyData } from "@/lib/vocabulary/types";
+import { AI_DISCLOSURE, AI_DISCLOSURE_VERSION } from "@/lib/ai-enrichment/contract";
+import {
+  confirmFormalAiDisclosure,
+  requestFormalAiContextExplanation,
+} from "@/lib/ai-enrichment/formal-client";
+import { buildTrustedAiContextPayload } from "@/lib/ai-enrichment/context-contract";
+import {
+  LOCAL_FIXTURE_LINEAGE,
+  runLocalFixtureContextExplanation,
+} from "@/lib/ai-enrichment/local-fixture-runtime";
+import type { AiContextExplanation } from "@/lib/ai-enrichment/types";
+import { makeId } from "@/lib/vocabulary/repository";
+import {
+  assertCompleteVocabularyExamplePairs,
+  buildVocabularyExamplePairs,
+} from "@/lib/vocabulary/example-pairs";
+
+type ExampleWordActionsProps = Readonly<{
+  example: string;
+  exampleTranslationZh: string;
+  exampleIndex: number;
+  sourceVocabularyItemId: string;
+  sourceSurfaceText: string;
+  sourceMeaningsZh: readonly string[];
+  sourceExamples: readonly string[];
+  localPreviewEnabled: boolean;
+  formalRouteEnabled: boolean;
+  data: VocabularyData;
+  commit: (
+    nextData: VocabularyData,
+    mutation?: VocabularyStorageMutation,
+  ) => Promise<VocabularyData>;
+}>;
+
+type SelectedWord = Readonly<{
+  text: string;
+  start: number;
+  end: number;
+}>;
+
+function detectTimezone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "Australia/Melbourne";
+}
+
+export function ExampleWordActions({
+  example,
+  exampleTranslationZh,
+  exampleIndex,
+  sourceVocabularyItemId,
+  sourceSurfaceText,
+  sourceMeaningsZh,
+  sourceExamples,
+  localPreviewEnabled,
+  formalRouteEnabled,
+  data,
+  commit,
+}: ExampleWordActionsProps) {
+  const segments = useMemo(() => segmentEnglishExample(example), [example]);
+  const [selectedWord, setSelectedWord] = useState<SelectedWord | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [draftWord, setDraftWord] = useState("");
+  const [draftMeaning, setDraftMeaning] = useState("");
+  const [draftExample, setDraftExample] = useState(example);
+  const [draftExampleTranslationZh, setDraftExampleTranslationZh] = useState(
+    exampleTranslationZh,
+  );
+  const [draftTrack, setDraftTrack] = useState<LearningTrack>("recognition");
+  const [message, setMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [explanation, setExplanation] = useState<AiContextExplanation | null>(null);
+  const [formalDisclosureAccepted, setFormalDisclosureAccepted] = useState(false);
+  const [modelNotice, setModelNotice] = useState<string>(LOCAL_FIXTURE_LINEAGE.notice);
+  const titleId = useId();
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const duplicate = useMemo(
+    () =>
+      selectedWord
+        ? findSelectedPersonVocabularyDuplicate(data, draftWord)
+        : null,
+    [data, draftWord, selectedWord],
+  );
+
+  useEffect(() => {
+    if (!selectedWord) {
+      triggerButtonRef.current?.focus();
+      triggerButtonRef.current = null;
+      return;
+    }
+
+    closeButtonRef.current?.focus();
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedWord(null);
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) {
+        return;
+      }
+
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          "button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex='-1'])",
+        ),
+      );
+      const first = focusable[0];
+      const last = focusable.at(-1);
+
+      if (!first || !last) {
+        event.preventDefault();
+        return;
+      }
+      if (event.shiftKey && (document.activeElement === first || !dialogRef.current.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [selectedWord]);
+
+  useEffect(() => () => cancelEnglishSpeech(), [selectedWord?.text]);
+
+  const openWordActions = (word: SelectedWord, trigger: HTMLButtonElement) => {
+    triggerButtonRef.current = trigger;
+    setSelectedWord(word);
+    setShowAddForm(false);
+    setDraftWord(word.text);
+    setDraftMeaning("");
+    setDraftExample(example);
+    setDraftExampleTranslationZh(exampleTranslationZh);
+    setDraftTrack("recognition");
+    setMessage("");
+    setIsSaving(false);
+    setIsExplaining(false);
+    setExplanation(null);
+    setFormalDisclosureAccepted(false);
+    setModelNotice(LOCAL_FIXTURE_LINEAGE.notice);
+  };
+
+  const closeWordActions = () => {
+    setSelectedWord(null);
+    setShowAddForm(false);
+    setMessage("");
+    setExplanation(null);
+  };
+
+  const listen = async () => {
+    if (!selectedWord || isListening) {
+      return;
+    }
+    setIsListening(true);
+    try {
+      const result = await speakEnglishText(selectedWord.text, "example-word");
+      setMessage(
+        result.status === "unsupported"
+          ? "Speech is not available in this browser."
+          : result.status === "unavailable"
+            ? result.message
+          : result.status === "spoken"
+            ? result.source === "local-fixture"
+              ? "Local preview audio played."
+              : `Playing “${result.spokenText}”.`
+            : "Choose a word to hear it.",
+      );
+    } finally {
+      setIsListening(false);
+    }
+  };
+
+  const explainInContext = async () => {
+    if (
+      !selectedWord ||
+      (!localPreviewEnabled && !formalRouteEnabled) ||
+      isExplaining
+    ) {
+      return;
+    }
+
+    setIsExplaining(true);
+    setMessage("");
+    try {
+      if (localPreviewEnabled) {
+        const trustedContext = buildTrustedAiContextPayload(
+          {
+            vocabularyEntryId: sourceVocabularyItemId,
+            exampleIndex,
+            selectedStart: selectedWord.start,
+            selectedEnd: selectedWord.end,
+            feature: "context_explain_v1",
+            disclosureVersion: AI_DISCLOSURE_VERSION,
+            idempotencyKey: makeId("local_context_preview"),
+          },
+          {
+            surfaceText: sourceSurfaceText,
+            meaningsZh: sourceMeaningsZh,
+            examples: sourceExamples,
+          },
+        );
+        const result = runLocalFixtureContextExplanation(
+          trustedContext,
+          makeId("local_context_result"),
+        );
+        setExplanation(result.value);
+        setModelNotice(LOCAL_FIXTURE_LINEAGE.notice);
+        setMessage("Local preview ready.");
+      } else {
+        if (!formalDisclosureAccepted) {
+          throw new Error("Please confirm the AI data notice first.");
+        }
+        await confirmFormalAiDisclosure(sourceVocabularyItemId);
+        const result = await requestFormalAiContextExplanation({
+          vocabularyEntryId: sourceVocabularyItemId,
+          exampleIndex,
+          selectedStart: selectedWord.start,
+          selectedEnd: selectedWord.end,
+          feature: "context_explain_v1",
+          disclosureVersion: AI_DISCLOSURE_VERSION,
+          idempotencyKey: makeId("formal_context_explain"),
+        });
+        setExplanation(result.stored.value);
+        setModelNotice(
+          `Generated by ${result.stored.lineage.modelLabel} · AI content may be inaccurate. Please review carefully before saving.`,
+        );
+        setMessage("Explanation ready.");
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not explain this word.");
+    } finally {
+      setIsExplaining(false);
+    }
+  };
+
+  const openManualAddForm = (contextResult?: AiContextExplanation) => {
+    setShowAddForm(true);
+    setDraftWord(contextResult?.suggestedHeadword ?? selectedWord?.text ?? "");
+    setDraftMeaning(
+      localPreviewEnabled ? "" : contextResult?.meaningInContextZh ?? "",
+    );
+    setDraftExample(example);
+    setDraftExampleTranslationZh(exampleTranslationZh);
+    setMessage("");
+  };
+
+  const saveToLearning = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!selectedWord || duplicate || isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage("");
+    const now = new Date().toISOString();
+    const timezone = detectTimezone();
+
+    try {
+      const examplePairs = assertCompleteVocabularyExamplePairs(
+        buildVocabularyExamplePairs({
+          example: draftExample,
+          exampleTranslationsZh: [draftExampleTranslationZh],
+        }),
+      );
+      const input = {
+        surfaceText: draftWord,
+        meaningZh: draftMeaning,
+        meaningsZh: normalizeTextList(draftMeaning),
+        example: draftExample,
+        examples: examplePairs.map((pair) => pair.en),
+        exampleTranslationsZh: examplePairs.map((pair) => pair.zh),
+        notes: "",
+        rarityScore: null,
+        learningTrack: draftTrack,
+        tags: null,
+        source: "manual" as const,
+        createdAt: now,
+        timezone,
+      };
+      const result = addVocabularyItem(data, input, now);
+      await commit(result.data, {
+        type: "vocabulary.add",
+        input,
+        now,
+        timezone,
+      });
+      setShowAddForm(false);
+      setMessage(
+        `Added “${result.item.surfaceText}” to ${result.item.learningTrack === "active" ? "Active" : "Recognition"}.`,
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not add this word.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const dialog =
+    selectedWord && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            data-card-toggle-ignore="true"
+            className="fixed inset-0 z-[70] flex items-end bg-[#14251d]/48 px-3 pt-8 backdrop-blur-[2px] sm:items-center sm:justify-center sm:p-6"
+            onPointerDown={(event) => {
+              if (event.target === event.currentTarget) {
+                closeWordActions();
+              }
+            }}
+          >
+            <section
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              className="mimi-card max-h-[88dvh] w-full overflow-y-auto rounded-b-none p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_24px_70px_rgb(20_37_29/0.28)] sm:max-w-lg sm:rounded-lg sm:p-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--mimi-text-muted)]">
+                    Word in context
+                  </p>
+                  <h3 id={titleId} className="mimi-display-title mt-1 text-3xl text-[var(--mimi-text)]">
+                    {selectedWord.text}
+                  </h3>
+                  <p className="mt-1 text-xs text-[var(--mimi-text-soft)]">
+                    From {sourceSurfaceText}
+                  </p>
+                </div>
+                <button
+                  ref={closeButtonRef}
+                  type="button"
+                  onClick={closeWordActions}
+                  aria-label="Close word actions"
+                  className="mimi-button-secondary mimi-focus-ring grid size-11 shrink-0 place-items-center"
+                >
+                  <X aria-hidden="true" className="size-4" />
+                </button>
+              </div>
+
+              <p className="mt-4 rounded-md bg-[var(--mimi-surface-muted)] px-3 py-2 text-sm leading-6 text-[var(--mimi-text-soft)]">
+                {example}
+              </p>
+              <p className="mt-1 px-3 text-sm leading-6 text-[var(--mimi-text-muted)]">
+                {exampleTranslationZh || "Chinese translation needed"}
+              </p>
+
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <PressableButton
+                  type="button"
+                  onClick={() => void listen()}
+                  disabled={isListening}
+                  aria-busy={isListening}
+                  className="mimi-button-secondary mimi-focus-ring inline-flex items-center justify-center gap-2 px-3 text-sm font-semibold"
+                >
+                  <Volume2 aria-hidden="true" className="size-4" />
+                  Listen
+                </PressableButton>
+                <PressableButton
+                  type="button"
+                  disabled={(!localPreviewEnabled && !formalRouteEnabled) || isExplaining}
+                  aria-describedby={`${titleId}-ai-note`}
+                  onClick={() => void explainInContext()}
+                  className="mimi-button-secondary mimi-focus-ring inline-flex items-center justify-center gap-2 px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  <Sparkles aria-hidden="true" className="size-4" />
+                  {isExplaining ? "Explaining..." : "AI explain"}
+                </PressableButton>
+                <PressableButton
+                  type="button"
+                  onClick={() => {
+                    openManualAddForm();
+                  }}
+                  className="mimi-button-secondary mimi-focus-ring inline-flex items-center justify-center gap-2 px-3 text-sm font-semibold"
+                >
+                  <BookPlus aria-hidden="true" className="size-4" />
+                  Add to learning
+                </PressableButton>
+              </div>
+
+              <p id={`${titleId}-ai-note`} className="mt-2 text-xs leading-5 text-[var(--mimi-text-muted)]">
+                {localPreviewEnabled
+                  ? LOCAL_FIXTURE_LINEAGE.notice
+                  : formalRouteEnabled
+                    ? modelNotice
+                    : "AI explanation unavailable."}
+              </p>
+
+              {formalRouteEnabled && !explanation ? (
+                <div className="mt-3 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-3">
+                  <p className="text-xs leading-5 text-[var(--mimi-text-soft)]">
+                    The word, its Chinese meanings, this example, and the selected position may be sent to Gemini.
+                    Study history, answers, notes, and audio stay out. {AI_DISCLOSURE.retentionSummary}{" "}
+                    {AI_DISCLOSURE.projectLoggingSummary}
+                  </p>
+                  <label className="mt-2 flex items-start gap-2 text-xs leading-5 text-[var(--mimi-text-soft)]">
+                    <input
+                      type="checkbox"
+                      checked={formalDisclosureAccepted}
+                      onChange={(event) => setFormalDisclosureAccepted(event.target.checked)}
+                      className="mt-1"
+                    />
+                    <span>I understand and want an AI explanation.</span>
+                  </label>
+                </div>
+              ) : null}
+
+              {explanation ? (
+                <div className="mt-4 grid gap-3 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="text-lg font-semibold text-[var(--mimi-text)]">
+                      {explanation.suggestedHeadword}
+                    </p>
+                    <span className="mimi-pill px-2 py-1 text-xs font-semibold">
+                      {explanation.grammarRoleZh}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-[var(--mimi-primary-deep)]">
+                    {explanation.meaningInContextZh}
+                  </p>
+                  <p className="text-sm leading-6 text-[var(--mimi-text-soft)]">
+                    {explanation.contextExplanationZh}
+                  </p>
+                  {explanation.phraseInContext ? (
+                    <p className="text-xs text-[var(--mimi-text-muted)]">
+                      In this example: {explanation.phraseInContext}
+                    </p>
+                  ) : null}
+                  <PressableButton
+                    type="button"
+                    onClick={() => openManualAddForm(explanation)}
+                    className="mimi-button-secondary mimi-focus-ring inline-flex items-center justify-center gap-2 px-3 text-sm font-semibold"
+                  >
+                    <BookPlus aria-hidden="true" className="size-4" />
+                    Add this word
+                  </PressableButton>
+                </div>
+              ) : null}
+
+              {showAddForm ? (
+                <form className="mt-4 grid gap-3 border-t border-[var(--mimi-border)] pt-4" onSubmit={saveToLearning}>
+                  <label className="grid gap-1.5">
+                    <span className="text-sm font-semibold text-[var(--mimi-text)]">Word or phrase</span>
+                    <input
+                      required
+                      value={draftWord}
+                      onChange={(event) => setDraftWord(event.target.value)}
+                      className="mimi-input px-3 text-base"
+                    />
+                  </label>
+                  <label className="grid gap-1.5">
+                    <span className="text-sm font-semibold text-[var(--mimi-text)]">Chinese meaning</span>
+                    <input
+                      value={draftMeaning}
+                      onChange={(event) => setDraftMeaning(event.target.value)}
+                      placeholder="Check before saving"
+                      className="mimi-input px-3 text-base"
+                    />
+                  </label>
+                  <label className="grid gap-1.5">
+                    <span className="text-sm font-semibold text-[var(--mimi-text)]">Example</span>
+                    <textarea
+                      rows={3}
+                      value={draftExample}
+                      onChange={(event) => setDraftExample(event.target.value)}
+                      className="mimi-input min-h-24 resize-y px-3 py-2 text-base"
+                    />
+                  </label>
+                  <label className="grid gap-1.5">
+                    <span className="text-sm font-semibold text-[var(--mimi-text)]">Chinese translation</span>
+                    <textarea
+                      rows={3}
+                      required={Boolean(draftExample.trim())}
+                      value={draftExampleTranslationZh}
+                      onChange={(event) => setDraftExampleTranslationZh(event.target.value)}
+                      className="mimi-input min-h-24 resize-y px-3 py-2 text-base"
+                    />
+                  </label>
+                  <fieldset>
+                    <legend className="text-sm font-semibold text-[var(--mimi-text)]">Learning Track</legend>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      {(["recognition", "active"] as const).map((track) => (
+                        <label
+                          key={track}
+                          className="mimi-button-secondary flex min-h-11 cursor-pointer items-center gap-2 px-3 text-sm font-semibold"
+                        >
+                          <input
+                            type="radio"
+                            name={`${titleId}-track`}
+                            checked={draftTrack === track}
+                            onChange={() => setDraftTrack(track)}
+                          />
+                          {track === "recognition" ? "Recognition" : "Active"}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+
+                  {duplicate ? (
+                    <p className="rounded-md bg-[var(--mimi-surface-muted)] px-3 py-2 text-sm text-[var(--mimi-text-soft)]">
+                      Already in Library{duplicate.status === "archived" ? " (archived)" : ""}.
+                    </p>
+                  ) : null}
+
+                  <PressableButton
+                    type="submit"
+                    disabled={Boolean(duplicate) || isSaving}
+                    className="mimi-button mimi-focus-ring inline-flex items-center justify-center gap-2 px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-55"
+                  >
+                    <Save aria-hidden="true" className="size-4" />
+                    {isSaving ? "Saving..." : "Save to learning"}
+                  </PressableButton>
+                </form>
+              ) : null}
+
+              {message ? (
+                <p aria-live="polite" className="mt-3 rounded-md bg-[var(--mimi-primary-soft)] px-3 py-2 text-sm text-[var(--mimi-primary-deep)]">
+                  {message}
+                </p>
+              ) : null}
+            </section>
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <>
+      <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--mimi-text-soft)]">
+        {segments.map((segment) =>
+          segment.isActionable ? (
+            <button
+              key={`${segment.start}-${segment.end}`}
+              type="button"
+              data-card-toggle-ignore="true"
+              onClick={(event) => {
+                event.stopPropagation();
+                openWordActions(segment, event.currentTarget);
+              }}
+              className="mimi-focus-ring rounded-[3px] px-0.5 text-inherit underline decoration-dotted decoration-[var(--mimi-border-strong)] underline-offset-2 transition hover:bg-[var(--mimi-primary-soft)] hover:text-[var(--mimi-primary-deep)]"
+              aria-label={`Actions for ${segment.text}`}
+            >
+              {segment.text}
+            </button>
+          ) : (
+            <span key={`${segment.start}-${segment.end}`}>{segment.text}</span>
+          ),
+        )}
+      </p>
+      {dialog}
+    </>
+  );
+}

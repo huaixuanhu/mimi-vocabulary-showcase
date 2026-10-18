@@ -1,0 +1,47 @@
+{
+  "name": "mimi-vocabulary-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "backup:dry-run:fixture": "node scripts/backup-plan-check.mjs --fixture",
+    "backup:dry-run:schema5-fixture": "node scripts/backup-plan-check.mjs --schema5-fixture",
+    "backup:dry-run:schema6-fixture": "node scripts/backup-plan-check.mjs --schema6-fixture",
+    "check": "npm run governance:check && npm run lint && npm run typecheck && npm run test && npm run backup:dry-run:fixture && npm run backup:dry-run:schema5-fixture && npm run backup:dry-run:schema6-fixture && npm run build",
+    "governance:check": "node governance/check.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@vercel/functions": "^3.7.5",
+    "google-auth-library": "^10.9.0",
+    "jose": "6.2.12",
+    "lucide-react": "^0.562.0",
+    "motion": "^12.42.2",
+    "next": "16.3.8",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "ts-fsrs": "^5.4.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^4.1.9"
+  },
+  "overrides": {
+    "postcss": "8.5.27",
+    "sharp": "0.35.5"
+  },
+  "license": "UNLICENSED"
+}

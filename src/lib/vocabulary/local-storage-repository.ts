@@ -1,0 +1,410 @@
+import type { VocabularyData } from "./types";
+import {
+  createDailyStudyDefaults,
+  createEmptyVocabularyData,
+} from "./repository";
+import { normalizeReviewSettings } from "@/lib/review/settings";
+import { LEGACY_RECOGNITION_PARAMETER_SET_ID } from "@/lib/review/types";
+import {
+  normalizeLearningTrack,
+  normalizeOptionalText,
+  normalizeTextList,
+  normalizeVocabularyTags,
+} from "./normalize";
+import { alignExampleTranslationsZh } from "./example-pairs";
+import {
+  DEFAULT_PERSON_ID,
+  createDefaultPerson,
+  getSelectedPersonId,
+} from "@/lib/people/repository";
+
+export const VOCABULARY_STORAGE_KEY = "mimi-showcase-vocabulary-v1";
+export const VOCABULARY_RECOVERY_KEY_PREFIX = `${VOCABULARY_STORAGE_KEY}:recovery:`;
+
+export class LocalVocabularyReadError extends Error {
+  readonly code = "LOCAL_VOCABULARY_RECOVERY_REQUIRED";
+
+  constructor() {
+    super("Saved browser data could not be read safely. The original data is preserved. Restore a checked backup to continue.");
+    this.name = "LocalVocabularyReadError";
+  }
+}
+
+type LegacyVocabularyData = {
+  schemaVersion?: unknown;
+  people?: unknown;
+  selectedPersonId?: unknown;
+  items?: unknown;
+  importBatches?: unknown;
+  reviewStates?: unknown;
+  reviewEvents?: unknown;
+  settings?: unknown;
+  settingsByPerson?: unknown;
+  dailyStudyDefaults?: unknown;
+  dailyStudyPlans?: unknown;
+  vocabularyCreationFacts?: unknown;
+  vocabularyCreationReversals?: unknown;
+  aiRuns?: unknown;
+  aiEnrichmentDrafts?: unknown;
+  vocabularyRelations?: unknown;
+  updatedAt?: unknown;
+};
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  return true;
+}
+
+function assertStoredDataShape(value: unknown): asserts value is Record<string, unknown> {
+  if (!isObject(value) || ![1, 2, 3, 4, 5, 6].includes(value.schemaVersion as number)) {
+    throw new LocalVocabularyReadError();
+  }
+
+  const collections = [
+    "items", "importBatches", "reviewStates", "reviewEvents", "people",
+    "settingsByPerson", "dailyStudyDefaults", "dailyStudyPlans",
+    "vocabularyCreationFacts", "vocabularyCreationReversals", "aiRuns",
+    "aiEnrichmentDrafts", "vocabularyRelations",
+  ];
+  for (const key of collections) {
+    const entries = value[key];
+    // Older versions legitimately lack collections introduced by later versions.
+    if (entries === undefined && key !== "items" && value.schemaVersion !== 6) continue;
+    if (!Array.isArray(entries) || entries.some((entry) => !isObject(entry))) {
+      throw new LocalVocabularyReadError();
+    }
+  }
+  for (const key of ["items", "importBatches", "reviewStates", "reviewEvents", "people"]) {
+    const entries = value[key];
+    if (Array.isArray(entries) && entries.some((entry) =>
+      typeof entry.id !== "string" || !entry.id.trim(),
+    )) {
+      throw new LocalVocabularyReadError();
+    }
+  }
+  if ((value.items as Record<string, unknown>[]).some((item) =>
+    typeof item.surfaceText !== "string" || !item.surfaceText.trim() ||
+    typeof item.normalizedText !== "string" || !item.normalizedText.trim(),
+  )) {
+    throw new LocalVocabularyReadError();
+  }
+  if ((value.schemaVersion as number) >= 3 &&
+    (!Array.isArray(value.people) || value.people.length === 0)) {
+    throw new LocalVocabularyReadError();
+  }
+  if ((value.updatedAt !== undefined || value.schemaVersion === 6) &&
+    (typeof value.updatedAt !== "string" || !Number.isFinite(Date.parse(value.updatedAt)))) {
+    throw new LocalVocabularyReadError();
+  }
+}
+
+function migrateItem(value: unknown, personId: string) {
+  if (!isObject(value)) {
+    return value;
+  }
+
+  const legacyMeaning = normalizeOptionalText(typeof value.meaningZh === "string" ? value.meaningZh : "");
+  const meaningsZh = normalizeTextList(
+    Array.isArray(value.meaningsZh) && value.meaningsZh.length ? value.meaningsZh : legacyMeaning,
+  );
+  const legacyExample = normalizeOptionalText(typeof value.example === "string" ? value.example : "");
+  const examples = normalizeTextList(
+    Array.isArray(value.examples) && value.examples.length ? value.examples : legacyExample,
+  );
+
+  return isObject(value)
+    ? {
+        ...value,
+        personId: typeof value.personId === "string" ? value.personId : personId,
+        meaningZh: meaningsZh[0] ?? legacyMeaning,
+        meaningsZh,
+        example: examples[0] ?? legacyExample,
+        examples,
+        exampleTranslationsZh: alignExampleTranslationsZh(
+          examples,
+          value.exampleTranslationsZh,
+        ),
+        learningTrack: normalizeLearningTrack(value.learningTrack),
+        tags: normalizeVocabularyTags(value.tags),
+      }
+    : value;
+}
+
+function migrateSettings(value: unknown, now: string) {
+  return normalizeReviewSettings(isObject(value) ? value : undefined, now);
+}
+
+function migrateReviewEvent(value: unknown, personId: string) {
+  if (!isObject(value)) {
+    return value;
+  }
+
+  const reviewProfile = value.reviewProfile === "active" ? "active" : "recognition";
+
+  return {
+    ...value,
+    personId: typeof value.personId === "string" ? value.personId : personId,
+    promptId: typeof value.promptId === "string" ? value.promptId : null,
+    reviewProfile,
+    activityType:
+      typeof value.activityType === "string" ? value.activityType : "recognition_card",
+    answerOutcome:
+      typeof value.answerOutcome === "string" ? value.answerOutcome : "self_rated",
+    answerNormalizationVersion:
+      typeof value.answerNormalizationVersion === "string"
+        ? value.answerNormalizationVersion
+        : null,
+    targetRevision:
+      typeof value.targetRevision === "string" ? value.targetRevision : null,
+    parameterSetId:
+      typeof value.parameterSetId === "string" && value.parameterSetId.trim()
+        ? value.parameterSetId
+        : LEGACY_RECOGNITION_PARAMETER_SET_ID,
+  };
+}
+
+function firstEventByItem(events: VocabularyData["reviewEvents"]) {
+  const earliest = new Map<string, string>();
+
+  for (const event of events) {
+    const key = `${event.personId}\u0000${event.vocabularyItemId}\u0000${event.reviewProfile}`;
+    const current = earliest.get(key);
+
+    if (!current || event.reviewedAt < current) {
+      earliest.set(key, event.reviewedAt);
+    }
+  }
+
+  return earliest;
+}
+
+function migrateReviewState(
+  value: unknown,
+  personId: string,
+  earliestEvents: Map<string, string>,
+) {
+  if (!isObject(value)) {
+    return value;
+  }
+
+  const resolvedPersonId = typeof value.personId === "string" ? value.personId : personId;
+  const reviewProfile = value.reviewProfile === "active" ? "active" : "recognition";
+  const vocabularyItemId =
+    typeof value.vocabularyItemId === "string" ? value.vocabularyItemId : "";
+  const eventKey = `${resolvedPersonId}\u0000${vocabularyItemId}\u0000${reviewProfile}`;
+  const firstRatedAt =
+    typeof value.firstRatedAt === "string"
+      ? value.firstRatedAt
+      : earliestEvents.get(eventKey) ?? null;
+
+  return {
+    ...value,
+    personId: resolvedPersonId,
+    reviewProfile,
+    parameterSetId:
+      typeof value.parameterSetId === "string" && value.parameterSetId.trim()
+        ? value.parameterSetId
+        : LEGACY_RECOGNITION_PARAMETER_SET_ID,
+    firstRatedAt,
+    historyOrigin: firstRatedAt ? "recorded" : "legacy_unknown",
+  };
+}
+
+function createLegacyCreationFacts(items: VocabularyData["items"]) {
+  return items.map((item) => ({
+    creationFactId: `creation_fact_legacy_${item.id}`,
+    personId: item.personId,
+    originalVocabularyItemId: item.id,
+    sourceActionId: item.importBatchId ?? item.id,
+    trackAtCreation: item.learningTrack,
+    sourceKind: item.importBatchId ? ("batch" as const) : ("single" as const),
+    historyOrigin: "legacy_backfill" as const,
+    systemCreatedAt: item.systemCreatedAt,
+  }));
+}
+
+export function migrateVocabularyData(value: unknown, now = new Date().toISOString()): VocabularyData {
+  assertStoredDataShape(value);
+
+  const maybeData = value as LegacyVocabularyData;
+  const items = Array.isArray(maybeData.items) ? maybeData.items : [];
+  const importBatches = Array.isArray(maybeData.importBatches) ? maybeData.importBatches : [];
+  const reviewStates = Array.isArray(maybeData.reviewStates) ? maybeData.reviewStates : [];
+  const reviewEvents = Array.isArray(maybeData.reviewEvents) ? maybeData.reviewEvents : [];
+  const updatedAt = typeof maybeData.updatedAt === "string" ? maybeData.updatedAt : now;
+
+  if (
+    maybeData.schemaVersion === 1 ||
+    maybeData.schemaVersion === 2 ||
+    maybeData.schemaVersion === 3 ||
+    maybeData.schemaVersion === 4 ||
+    maybeData.schemaVersion === 5 ||
+    maybeData.schemaVersion === 6
+  ) {
+    const isSinglePersonLegacy = maybeData.schemaVersion === 1 || maybeData.schemaVersion === 2;
+    const people = isSinglePersonLegacy
+      ? [createDefaultPerson(now)]
+      : Array.isArray(maybeData.people) && maybeData.people.length
+        ? (maybeData.people as VocabularyData["people"])
+        : [createDefaultPerson(now)];
+    const fallbackPersonId = people[0]?.id ?? DEFAULT_PERSON_ID;
+    const selectedPersonId =
+      !isSinglePersonLegacy &&
+      typeof maybeData.selectedPersonId === "string" &&
+      people.some((person) => person.id === maybeData.selectedPersonId)
+        ? maybeData.selectedPersonId
+        : fallbackPersonId;
+    const migratedItems = items.map((item) =>
+      migrateItem(item, fallbackPersonId),
+    ) as VocabularyData["items"];
+    const migratedEvents = reviewEvents.map((event) =>
+      migrateReviewEvent(event, fallbackPersonId),
+    ) as VocabularyData["reviewEvents"];
+    const earliestEvents = firstEventByItem(migratedEvents);
+    const migratedStates = reviewStates.map((state) =>
+      migrateReviewState(state, fallbackPersonId, earliestEvents),
+    ) as VocabularyData["reviewStates"];
+    const legacySettings = isSinglePersonLegacy
+      ? [
+          {
+            personId: fallbackPersonId,
+            ...migrateSettings(maybeData.settings, now),
+          },
+        ]
+      : Array.isArray(maybeData.settingsByPerson)
+        ? maybeData.settingsByPerson
+            .filter(isObject)
+            .map((settings) => ({
+              personId:
+                typeof settings.personId === "string" ? settings.personId : fallbackPersonId,
+              ...migrateSettings(settings, now),
+            }))
+        : [];
+    const existingSettings = new Set(legacySettings.map((settings) => settings.personId));
+    const settingsByPerson = [
+      ...legacySettings,
+      ...people
+        .filter((person) => !existingSettings.has(person.id))
+        .map((person) => ({
+          personId: person.id,
+          ...normalizeReviewSettings(undefined, now),
+        })),
+    ];
+    const defaultRows = settingsByPerson.flatMap((settings) =>
+      createDailyStudyDefaults(settings.personId, settings),
+    );
+    const hasSchema6Collections = maybeData.schemaVersion === 6;
+    const migrated: VocabularyData = {
+      schemaVersion: 6,
+      people,
+      selectedPersonId,
+      items: migratedItems,
+      importBatches: importBatches.map((batch) =>
+        isObject(batch)
+          ? {
+              ...batch,
+              personId:
+                typeof batch.personId === "string" ? batch.personId : fallbackPersonId,
+            }
+          : batch,
+      ) as VocabularyData["importBatches"],
+      reviewStates: migratedStates,
+      reviewEvents: migratedEvents,
+      settingsByPerson,
+      dailyStudyDefaults:
+        hasSchema6Collections && Array.isArray(maybeData.dailyStudyDefaults)
+          ? (maybeData.dailyStudyDefaults as VocabularyData["dailyStudyDefaults"])
+          : defaultRows,
+      dailyStudyPlans:
+        hasSchema6Collections && Array.isArray(maybeData.dailyStudyPlans)
+          ? (maybeData.dailyStudyPlans as VocabularyData["dailyStudyPlans"])
+          : [],
+      vocabularyCreationFacts:
+        hasSchema6Collections && Array.isArray(maybeData.vocabularyCreationFacts)
+          ? (maybeData.vocabularyCreationFacts as VocabularyData["vocabularyCreationFacts"])
+          : createLegacyCreationFacts(migratedItems),
+      vocabularyCreationReversals:
+        hasSchema6Collections && Array.isArray(maybeData.vocabularyCreationReversals)
+          ? (maybeData.vocabularyCreationReversals as VocabularyData["vocabularyCreationReversals"])
+          : [],
+      aiRuns:
+        hasSchema6Collections && Array.isArray(maybeData.aiRuns)
+          ? (maybeData.aiRuns as VocabularyData["aiRuns"])
+          : [],
+      aiEnrichmentDrafts:
+        hasSchema6Collections && Array.isArray(maybeData.aiEnrichmentDrafts)
+          ? (maybeData.aiEnrichmentDrafts as VocabularyData["aiEnrichmentDrafts"])
+          : [],
+      vocabularyRelations:
+        hasSchema6Collections && Array.isArray(maybeData.vocabularyRelations)
+          ? (maybeData.vocabularyRelations as VocabularyData["vocabularyRelations"])
+          : [],
+      updatedAt,
+    };
+
+    return {
+      ...migrated,
+      selectedPersonId: getSelectedPersonId(migrated),
+    };
+  }
+
+  throw new LocalVocabularyReadError();
+}
+
+function parseStoredData(raw: string) {
+  try {
+    return migrateVocabularyData(JSON.parse(raw) as unknown);
+  } catch {
+    // Never turn an unreadable saved value into an empty writable workspace.
+    throw new LocalVocabularyReadError();
+  }
+}
+
+export function readVocabularyData() {
+  if (typeof window === "undefined") {
+    return createEmptyVocabularyData();
+  }
+
+  const raw = window.localStorage.getItem(VOCABULARY_STORAGE_KEY);
+
+  if (raw === null) {
+    return createEmptyVocabularyData();
+  }
+
+  return parseStoredData(raw);
+}
+
+export function writeVocabularyData(data: VocabularyData) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const raw = window.localStorage.getItem(VOCABULARY_STORAGE_KEY);
+  if (raw !== null) parseStoredData(raw);
+  assertStoredDataShape(data);
+  window.localStorage.setItem(VOCABULARY_STORAGE_KEY, JSON.stringify(data));
+}
+
+/** Call only after the existing backup preview and explicit replacement confirmation. */
+export function restoreVocabularyData(data: VocabularyData) {
+  if (typeof window === "undefined") {
+    throw new Error("Browser backup restore requires a browser workspace");
+  }
+
+  assertStoredDataShape(data);
+  const replacement = JSON.stringify(data);
+  const raw = window.localStorage.getItem(VOCABULARY_STORAGE_KEY);
+  const recoveryStorageKey = raw === null
+    ? null
+    : `${VOCABULARY_RECOVERY_KEY_PREFIX}${Date.now()}:${crypto.randomUUID()}`;
+
+  // Preserve exact bytes first. If browser storage is full, replacement must stop.
+  if (recoveryStorageKey !== null) {
+    window.localStorage.setItem(recoveryStorageKey, raw!);
+  }
+  window.localStorage.setItem(VOCABULARY_STORAGE_KEY, replacement);
+  return { recoveryStorageKey };
+}
