@@ -294,7 +294,7 @@ export function ImportWorkspace() {
       {VOCABULARY_TAGS.map((tag) => (
         <label
           key={tag}
-          className="mimi-focus-ring relative flex min-h-11 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] px-3 text-xs font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+          className="mimi-focus-ring relative flex min-h-11 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 text-xs font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
         >
           <input
             className="sr-only"
@@ -328,10 +328,10 @@ export function ImportWorkspace() {
               type="button"
               onClick={() => setMode(tab.value as ImportMode)}
               aria-pressed={mode === tab.value}
-              className={`mimi-focus-ring rounded-md border px-3 py-2 text-sm font-semibold transition duration-200 ease-[var(--mimi-ease)] ${
+              className={`mimi-focus-ring mimi-press rounded-full border px-3.5 py-2 text-sm font-semibold ${
                 mode === tab.value
                   ? "border-[var(--mimi-primary)] bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]"
-                  : "border-[var(--mimi-border)] bg-[#fffaf1]/72 text-[#5f6d62] hover:-translate-y-0.5 hover:border-[var(--mimi-border-strong)] hover:text-[#274331]"
+                  : "border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)]/72 text-[var(--mimi-text-soft)] hover:-translate-y-0.5 hover:border-[var(--mimi-border-strong)] hover:text-[var(--mimi-primary-deep)]"
               }`}
             >
               {tab.label}
@@ -342,19 +342,19 @@ export function ImportWorkspace() {
 
       {mode === "single" ? (
         <section className="mimi-panel p-4 sm:p-5">
-          <h2 className="mimi-display-title mb-4 text-xl text-[#203229]">Add one word or phrase</h2>
+          <h2 className="mimi-display-title mb-4 text-xl text-[var(--mimi-text)]">Add one word or phrase</h2>
           <form className="grid gap-4" aria-label="Single vocabulary input" onSubmit={saveSingleInput}>
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-[#203229]">Word or phrase</span>
+              <span className="text-sm font-semibold text-[var(--mimi-text)]">Word or phrase</span>
               <input name="word_or_phrase" required placeholder="allocate" className="mimi-input px-3 text-base" />
             </label>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="grid gap-2">
-                <span className="text-sm font-semibold text-[#203229]">Chinese meaning</span>
+                <span className="text-sm font-semibold text-[var(--mimi-text)]">Chinese meaning</span>
                 <input name="meaning_zh" placeholder="分配" className="mimi-input px-3 text-base" />
               </label>
               <label className="grid gap-2">
-                <span className="text-sm font-semibold text-[#203229]">Rarity</span>
+                <span className="text-sm font-semibold text-[var(--mimi-text)]">Rarity</span>
                 <input
                   value={singleRarityScore}
                   onChange={(event) => setSingleRarityScore(event.target.value)}
@@ -366,11 +366,11 @@ export function ImportWorkspace() {
               </label>
             </div>
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-[#203229]">Example</span>
+              <span className="text-sm font-semibold text-[var(--mimi-text)]">Example</span>
               <textarea name="example" rows={3} className="mimi-input min-h-24 resize-y px-3 py-2 text-base" />
             </label>
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-[#203229]">Chinese translation</span>
+              <span className="text-sm font-semibold text-[var(--mimi-text)]">Chinese translation</span>
               <textarea
                 name="example_translation_zh"
                 rows={2}
@@ -378,11 +378,11 @@ export function ImportWorkspace() {
               />
             </label>
             <label className="grid gap-2">
-              <span className="text-sm font-semibold text-[#203229]">Notes</span>
+              <span className="text-sm font-semibold text-[var(--mimi-text)]">Notes</span>
               <textarea name="notes" rows={2} className="mimi-input min-h-20 resize-y px-3 py-2 text-base" />
             </label>
             <fieldset className="grid gap-2">
-              <legend className="text-sm font-semibold text-[#203229]">Learning track</legend>
+              <legend className="text-sm font-semibold text-[var(--mimi-text)]">Learning track</legend>
               <div className="grid gap-2 sm:grid-cols-2">
                 {[
                   { value: "recognition", label: "Recognition" },
@@ -390,7 +390,7 @@ export function ImportWorkspace() {
                 ].map((track) => (
                   <label
                     key={track.value}
-                    className="mimi-focus-ring relative flex min-h-11 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] px-3 text-sm font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+                    className="mimi-focus-ring relative flex min-h-11 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 text-sm font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
                   >
                     <input
                       className="sr-only"
@@ -406,7 +406,7 @@ export function ImportWorkspace() {
               </div>
             </fieldset>
             <fieldset className="grid gap-2">
-              <legend className="text-sm font-semibold text-[#203229]">Tags</legend>
+              <legend className="text-sm font-semibold text-[var(--mimi-text)]">Tags</legend>
               {renderTagControls(singleTags, setSingleTags)}
             </fieldset>
             <PressableButton
@@ -421,11 +421,11 @@ export function ImportWorkspace() {
       ) : (
         <>
           <section className="mimi-panel p-4 sm:p-5">
-            <h2 className="mimi-display-title mb-4 text-xl text-[#203229]">Batch import</h2>
+            <h2 className="mimi-display-title mb-4 text-xl text-[var(--mimi-text)]">Batch import</h2>
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="grid gap-4">
                 <label className="grid gap-2">
-                  <span className="text-sm font-semibold text-[#203229]">Choose a file</span>
+                  <span className="text-sm font-semibold text-[var(--mimi-text)]">Choose a file</span>
                   <input
                     type="file"
                     accept=".json,application/json"
@@ -434,7 +434,7 @@ export function ImportWorkspace() {
                   />
                 </label>
                 <label className="grid gap-2">
-                  <span className="text-sm font-semibold text-[#203229]">Or paste your list</span>
+                  <span className="text-sm font-semibold text-[var(--mimi-text)]">Or paste your list</span>
                   <textarea
                     rows={15}
                     value={jsonText}
@@ -448,7 +448,7 @@ export function ImportWorkspace() {
                   />
                 </label>
               </div>
-              <aside className="rounded-md border border-[#d8d1c2] bg-[#fffaf1]/72 p-4 text-sm leading-6 text-[#5f6d62]">
+              <aside className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)]/72 p-4 text-sm leading-6 text-[var(--mimi-text-soft)]">
                 <details className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 py-2">
                   <summary className="mimi-focus-ring cursor-pointer font-semibold text-[var(--mimi-primary-deep)]">
                     Example format
@@ -476,7 +476,7 @@ export function ImportWorkspace() {
 
           <section className="mimi-panel p-4 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="mimi-display-title text-xl text-[#203229]">Preview</h2>
+              <h2 className="mimi-display-title text-xl text-[var(--mimi-text)]">Preview</h2>
               <PressableButton
                 type="button"
                 disabled={!acceptedIds.size || isSavingImport}
@@ -495,9 +495,9 @@ export function ImportWorkspace() {
                 ["Saved", summary.duplicateRows],
                 ["Check", summary.invalidRows],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-md bg-[#efe9dc] p-3">
-                  <p className="text-xs font-semibold text-[#5f6d62]">{label}</p>
-                  <p className="mt-1 text-xl font-semibold text-[#203229]">{value}</p>
+                <div key={label} className="rounded-md bg-[var(--mimi-surface-muted)] p-3">
+                  <p className="text-xs font-semibold text-[var(--mimi-text-soft)]">{label}</p>
+                  <p className="mt-1 text-xl font-semibold text-[var(--mimi-text)]">{value}</p>
                 </div>
               ))}
             </div>
@@ -514,7 +514,7 @@ export function ImportWorkspace() {
                             checked={acceptedIds.has(candidate.tempId)}
                             disabled={candidate.status !== "new"}
                             onChange={(event) => toggleAccepted(candidate.tempId, event.target.checked)}
-                            className="size-5 accent-[#5f7d66]"
+                            className="size-5 accent-[var(--mimi-primary)]"
                           />
                           Save entry {index + 1}
                         </label>
@@ -642,7 +642,7 @@ export function ImportWorkspace() {
                 {desktopPreview ? <div className="overflow-x-auto">
                 <table className="w-full min-w-[1380px] border-collapse text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[#d8d1c2] text-[#5f6d62]">
+                    <tr className="border-b border-[var(--mimi-border)] text-[var(--mimi-text-soft)]">
                       <th className="py-2 pr-3 font-medium">Save</th>
                       <th className="py-2 pr-3 font-medium">Track</th>
                       <th className="py-2 pr-3 font-medium">Word</th>
@@ -656,14 +656,14 @@ export function ImportWorkspace() {
                   </thead>
                   <tbody>
                     {candidates.map((candidate) => (
-                      <tr key={candidate.tempId} className="border-b border-[#e4dece] align-top">
+                      <tr key={candidate.tempId} className="border-b border-[var(--mimi-border)] align-top">
                         <td className="py-2 pr-3">
                           <input
                             type="checkbox"
                             checked={acceptedIds.has(candidate.tempId)}
                             disabled={candidate.status !== "new"}
                             onChange={(event) => toggleAccepted(candidate.tempId, event.target.checked)}
-                            className="size-4 accent-[#5f7d66]"
+                            className="size-4 accent-[var(--mimi-primary)]"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -755,9 +755,9 @@ export function ImportWorkspace() {
                           />
                         </td>
                         <td className="py-2 pr-3">
-                          <span className="block font-medium text-[#203229]">{candidateStatusLabel(candidate.status)}</span>
+                          <span className="block font-medium text-[var(--mimi-text)]">{candidateStatusLabel(candidate.status)}</span>
                           {candidate.errors.length ? (
-                            <span className="block text-xs text-[#8a4d21]">
+                            <span className="block text-xs text-[var(--mimi-warning-ink)]">
                               {Array.from(new Set(candidate.errors.map(candidateIssueLabel))).join(", ")}
                             </span>
                           ) : null}
@@ -769,7 +769,7 @@ export function ImportWorkspace() {
               </div> : null}
               </>
             ) : (
-              <p className="rounded-md border border-dashed border-[#afbea9] bg-[#fffaf1] p-4 text-sm leading-6 text-[#5f6d62]">
+              <p className="rounded-md border border-dashed border-[var(--mimi-border-strong)] bg-[var(--mimi-surface-strong)] p-4 text-sm leading-6 text-[var(--mimi-text-soft)]">
                 Choose a file or paste your list to begin.
               </p>
             )}
@@ -777,7 +777,7 @@ export function ImportWorkspace() {
         </>
       )}
 
-      {message ? <p className="rounded-md bg-[#d9e5d5] px-3 py-2 text-sm text-[#274331]">{message}</p> : null}
+      {message ? <p className="rounded-md bg-[var(--mimi-primary-soft)] px-3 py-2 text-sm text-[var(--mimi-primary-deep)]">{message}</p> : null}
     </div>
   );
 }

@@ -18,6 +18,8 @@ function isActiveRoute(pathname: string, href: string) {
   return href === "/" ? pathname === href : pathname.startsWith(href);
 }
 
+const pebbleSpring = { type: "spring", visualDuration: 0.34, bounce: 0.3 } as const;
+
 export function DesktopSidebar() {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
@@ -42,21 +44,24 @@ export function DesktopSidebar() {
               key={item.href}
               href={item.href}
               title={item.label}
-              className={`mimi-focus-ring group relative flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition duration-200 ease-[var(--mimi-ease)] ${
+              aria-current={active ? "page" : undefined}
+              className={`mimi-focus-ring mimi-press group relative flex min-h-11 items-center gap-3 rounded-full px-4 text-sm font-medium ${
                 active
-                  ? "bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)] shadow-[0_12px_28px_rgb(15_27_21/0.16)]"
-                  : "text-[var(--mimi-rail-soft)] hover:-translate-y-0.5 hover:bg-[var(--mimi-nav-hover-bg)] hover:text-[var(--mimi-rail-strong)] hover:shadow-[0_12px_24px_rgb(9_16_12/0.14)]"
+                  ? "text-[var(--mimi-on-thumb)]"
+                  : "text-[var(--mimi-rail-soft)] hover:bg-[var(--mimi-nav-hover-bg)] hover:text-[var(--mimi-rail-strong)]"
               }`}
             >
-              {active ? (
+              {active && reduceMotion ? (
+                <span className="mimi-gel-thumb absolute inset-0 rounded-full" />
+              ) : active ? (
                 <motion.span
                   layoutId="desktop-nav-active"
-                  transition={{ duration: reduceMotion ? 0.12 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute left-1 top-1/2 h-7 w-1 -translate-y-1/2 rounded-full bg-[var(--mimi-primary)]"
+                  transition={pebbleSpring}
+                  className="mimi-gel-thumb absolute inset-0 rounded-full"
                 />
               ) : null}
-              <Icon aria-hidden="true" className="size-4 shrink-0" />
-              <span>{item.label}</span>
+              <Icon aria-hidden="true" className="relative z-10 size-4 shrink-0" />
+              <span className="relative z-10">{item.label}</span>
             </Link>
           );
         })}
@@ -76,7 +81,7 @@ export function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mimi-mobile-nav fixed inset-x-0 bottom-0 z-20 border-t px-2 pt-2 backdrop-blur lg:hidden"
+        className="mimi-mobile-nav fixed inset-x-3 z-20 border p-1.5 backdrop-blur lg:hidden"
         aria-label="Mobile"
       >
         <div className="mx-auto grid max-w-5xl grid-cols-5 gap-1">
@@ -90,15 +95,17 @@ export function MobileBottomNav() {
                 href={item.href}
                 title={item.label}
                 aria-current={active ? "page" : undefined}
-                className={`mimi-focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-semibold transition duration-200 ease-[var(--mimi-ease)] ${
-                  active ? "text-[var(--mimi-primary-deep)]" : "text-[var(--mimi-text-soft)] hover:-translate-y-0.5 hover:bg-[var(--mimi-primary-soft)] hover:text-[var(--mimi-primary-deep)]"
+                className={`mimi-focus-ring mimi-press relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-full text-[11px] font-semibold ${
+                  active ? "text-[var(--mimi-on-thumb)]" : "text-[var(--mimi-text-soft)] hover:text-[var(--mimi-primary-deep)]"
                 }`}
               >
-                {active ? (
+                {active && reduceMotion ? (
+                  <span className="mimi-gel-thumb absolute inset-x-1 inset-y-0.5 rounded-full" />
+                ) : active ? (
                   <motion.span
                     layoutId="mobile-nav-active"
-                    transition={{ duration: reduceMotion ? 0.12 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-                    className="absolute inset-x-1 inset-y-1 rounded-md bg-[var(--mimi-primary-soft)]"
+                    transition={pebbleSpring}
+                    className="mimi-gel-thumb absolute inset-x-1 inset-y-0.5 rounded-full"
                   />
                 ) : null}
                 <span className="relative z-10">
@@ -116,17 +123,19 @@ export function MobileBottomNav() {
             aria-expanded={moreOpen}
             aria-current={moreActive ? "page" : undefined}
             onClick={() => setMoreOpen(true)}
-            className={`mimi-focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-semibold transition duration-200 ease-[var(--mimi-ease)] ${
+            className={`mimi-focus-ring mimi-press relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-full text-[11px] font-semibold ${
               moreActive || moreOpen
-                ? "text-[var(--mimi-primary-deep)]"
-                : "text-[var(--mimi-text-soft)] hover:-translate-y-0.5 hover:bg-[var(--mimi-primary-soft)] hover:text-[var(--mimi-primary-deep)]"
+                ? "text-[var(--mimi-on-thumb)]"
+                : "text-[var(--mimi-text-soft)] hover:text-[var(--mimi-primary-deep)]"
             }`}
           >
-            {moreActive || moreOpen ? (
+            {(moreActive || moreOpen) && reduceMotion ? (
+              <span className="mimi-gel-thumb absolute inset-x-1 inset-y-0.5 rounded-full" />
+            ) : moreActive || moreOpen ? (
               <motion.span
                 layoutId="mobile-nav-active"
-                transition={{ duration: reduceMotion ? 0.12 : 0.24, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-x-1 inset-y-1 rounded-md bg-[var(--mimi-primary-soft)]"
+                transition={pebbleSpring}
+                className="mimi-gel-thumb absolute inset-x-1 inset-y-0.5 rounded-full"
               />
             ) : null}
             <span className="relative z-10">
@@ -151,7 +160,7 @@ export function MobileBottomNav() {
             type="button"
             onClick={() => setMoreOpen(false)}
             aria-label="Close More menu"
-            className="mimi-button-secondary mimi-focus-ring grid size-11 shrink-0 place-items-center"
+            className="mimi-icon-button mimi-focus-ring grid size-11 shrink-0 place-items-center"
           >
             <X aria-hidden="true" className="size-4" />
           </button>
@@ -168,9 +177,9 @@ export function MobileBottomNav() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 onClick={() => setMoreOpen(false)}
-                className={`mimi-focus-ring flex min-h-14 items-center gap-3 rounded-md border px-4 text-sm font-semibold transition duration-200 ease-[var(--mimi-ease)] ${
+                className={`mimi-focus-ring mimi-press flex min-h-14 items-center gap-3 rounded-[20px] border px-4 text-sm font-semibold ${
                   active
-                    ? "border-[var(--mimi-primary)] bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]"
+                    ? "border-transparent bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]"
                     : "border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] text-[var(--mimi-text)] hover:border-[var(--mimi-border-strong)] hover:shadow-[var(--mimi-shadow-soft)]"
                 }`}
               >

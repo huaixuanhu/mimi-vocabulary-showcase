@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
 import type { StudyZone } from "@/lib/daily-study/types";
 
 type LearningZoneTabsProps = Readonly<{
@@ -13,16 +16,20 @@ const learningZones = [
   { value: "new", label: "New Learning" },
 ] as const;
 
+const thumbSpring = { type: "spring", visualDuration: 0.34, bounce: 0.3 } as const;
+
 export function LearningZoneTabs({
   zone,
   reviewHref,
   newLearningHref,
   label,
 }: LearningZoneTabsProps) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <nav
       aria-label={label}
-      className="grid grid-cols-2 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-1"
+      className="mimi-glass-tray grid grid-cols-2 rounded-full p-1"
     >
       {learningZones.map((item) => {
         const active = zone === item.value;
@@ -33,13 +40,22 @@ export function LearningZoneTabs({
             key={item.value}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`mimi-focus-ring flex min-h-11 items-center justify-center rounded px-3 text-sm font-semibold transition-colors ${
+            className={`mimi-focus-ring mimi-press relative flex min-h-11 items-center justify-center rounded-full px-3 text-sm font-semibold ${
               active
-                ? "bg-[var(--mimi-surface-strong)] text-[var(--mimi-primary-deep)] shadow-sm"
+                ? "text-[var(--mimi-on-thumb)]"
                 : "text-[var(--mimi-text-soft)] hover:text-[var(--mimi-primary-deep)]"
             }`}
           >
-            {item.label}
+            {active && reduceMotion ? (
+              <span className="mimi-gel-thumb absolute inset-0 rounded-full" />
+            ) : active ? (
+              <motion.span
+                layoutId={`zone-thumb-${label}`}
+                transition={thumbSpring}
+                className="mimi-gel-thumb absolute inset-0 rounded-full"
+              />
+            ) : null}
+            <span className="relative z-10">{item.label}</span>
           </Link>
         );
       })}

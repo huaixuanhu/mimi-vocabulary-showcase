@@ -120,7 +120,7 @@ export function ResetTodayControl({
           <PressableButton
             type="button"
             onClick={() => setGate(2)}
-            className="mimi-button mimi-focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold"
+            className="mimi-button mimi-button-danger mimi-focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold"
           >
             YES
           </PressableButton>
@@ -151,7 +151,7 @@ export function ResetTodayControl({
             type="button"
             disabled={isResetting}
             onClick={() => void confirmReset()}
-            className="mimi-button mimi-focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold disabled:cursor-wait disabled:opacity-60"
+            className="mimi-button mimi-button-danger mimi-focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold disabled:cursor-wait disabled:opacity-60"
           >
             {isResetting ? "正在清空..." : "确认清空"}
           </PressableButton>

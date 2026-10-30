@@ -555,8 +555,8 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
       <div className="mimi-panel p-4 sm:p-5">
         <div className="grid gap-4">
           <label className="relative grid gap-2">
-            <span className="text-sm font-semibold text-[#203229]">Search</span>
-            <Search aria-hidden="true" className="absolute bottom-3 left-3 size-4 text-[#5f6d62]" />
+            <span className="text-sm font-semibold text-[var(--mimi-text)]">Search</span>
+            <Search aria-hidden="true" className="absolute bottom-3 left-3 size-4 text-[var(--mimi-text-soft)]" />
             <input
               value={query}
               onChange={(event) => { setQuery(event.target.value); setSelectedIds(new Set()); }}
@@ -572,10 +572,10 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                 type="button"
                 onClick={() => { setFilter(tab.value); setSelectedIds(new Set()); }}
                 aria-pressed={filter === tab.value}
-                className={`mimi-focus-ring rounded-md border px-3 py-2 text-sm font-semibold transition duration-200 ease-[var(--mimi-ease)] ${
+                className={`mimi-focus-ring mimi-press rounded-full border px-3.5 py-2 text-sm font-semibold ${
                   filter === tab.value
                     ? "border-[var(--mimi-primary)] bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]"
-                    : "border-[var(--mimi-border)] bg-[#fffaf1]/72 text-[#5f6d62] hover:-translate-y-0.5 hover:border-[var(--mimi-border-strong)] hover:text-[#274331]"
+                    : "border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)]/72 text-[var(--mimi-text-soft)] hover:-translate-y-0.5 hover:border-[var(--mimi-border-strong)] hover:text-[var(--mimi-primary-deep)]"
                 }`}
               >
                 {tab.label}
@@ -612,11 +612,11 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
           </div>
 
           {batchSummaries.length ? (
-            <div className="grid gap-3 rounded-md border border-[#d8d1c2] bg-[#fffaf1]/64 p-3">
+            <div className="grid gap-3 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)]/64 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="mimi-display-title text-lg text-[#203229]">Batch imported</h2>
-                  <p className="text-xs leading-5 text-[#5f6d62]">
+                  <h2 className="mimi-display-title text-lg text-[var(--mimi-text)]">Batch imported</h2>
+                  <p className="text-xs leading-5 text-[var(--mimi-text-soft)]">
                     Undo a batch if it was added by mistake.
                   </p>
                 </div>
@@ -625,11 +625,11 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                 {batchSummaries.map(({ batch, remainingItems }) => (
                   <div
                     key={batch.id}
-                    className="grid gap-2 rounded-md border border-[#e4dece] bg-[#fffaf1] p-3 sm:grid-cols-[1fr_auto] sm:items-center"
+                    className="grid gap-2 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] p-3 sm:grid-cols-[1fr_auto] sm:items-center"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-[#203229]">{getBatchLabel(batch)}</p>
-                      <p className="text-xs leading-5 text-[#5f6d62]">
+                      <p className="text-sm font-semibold text-[var(--mimi-text)]">{getBatchLabel(batch)}</p>
+                      <p className="text-xs leading-5 text-[var(--mimi-text-soft)]">
                         {remainingItems} in Library · {batch.acceptedRows} originally saved
                       </p>
                     </div>
@@ -655,13 +655,13 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
           ) : null}
         </div>
 
-        {message ? <p role="status" className="mt-3 rounded-md bg-[#d9e5d5] px-3 py-2 text-sm text-[#274331]">{message}</p> : null}
+        {message ? <p role="status" className="mt-3 rounded-md bg-[var(--mimi-primary-soft)] px-3 py-2 text-sm text-[var(--mimi-primary-deep)]">{message}</p> : null}
       </div>
 
       <div className="mimi-panel overflow-hidden">
-        <div className="grid gap-3 border-b border-[#d8d1c2] px-4 py-3">
+        <div className="grid gap-3 border-b border-[var(--mimi-border)] px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-[#5f6d62]">
+            <p className="text-sm text-[var(--mimi-text-soft)]">
             {isLoaded
               ? `${visibleItems.length} shown / ${allItems.length} total`
               : "Loading Library..."}
@@ -687,7 +687,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
               <div className="flex flex-wrap gap-2">
                 <PressableButton type="button" disabled={!visibleItems.length} onClick={() => setSelectedIds(new Set(visibleItems.map((item) => item.id)))} className="mimi-button-secondary mimi-focus-ring min-h-11 px-3 text-sm font-semibold disabled:opacity-50">Select all shown</PressableButton>
                 <PressableButton type="button" disabled={!selectedItems.length} onClick={() => setSelectedIds(new Set())} className="mimi-button-secondary mimi-focus-ring min-h-11 px-3 text-sm font-semibold disabled:opacity-50">Clear selection</PressableButton>
-                <PressableButton type="button" disabled={!selectedItems.length} onClick={() => setBulkDeleteItems([...selectedItems])} className="mimi-button mimi-focus-ring inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold disabled:opacity-50">
+                <PressableButton type="button" disabled={!selectedItems.length} onClick={() => setBulkDeleteItems([...selectedItems])} className="mimi-button mimi-button-danger mimi-focus-ring inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold disabled:opacity-50">
                   <Trash2 aria-hidden="true" className="size-4" />Delete selected ({selectedItems.length})
                 </PressableButton>
               </div>
@@ -697,7 +697,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
         </div>
 
         {visibleItems.length ? (
-          <div className="divide-y divide-[#e4dece]">
+          <div className="divide-y divide-[var(--mimi-border)]">
             {visibleItems.map((item) => {
               const isEditing = editingId === item.id && draft;
               const itemMeanings = getItemMeanings(item);
@@ -709,7 +709,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                 !historyProfiles?.has(otherTrack);
 
               return (
-                <div key={item.id} className={`grid gap-3 p-4 transition hover:bg-[#fffaf1]/72 ${isSelecting && selectedIds.has(item.id) ? "bg-[var(--mimi-primary-soft)]" : ""}`}>
+                <div key={item.id} className={`grid gap-3 p-4 transition hover:bg-[var(--mimi-surface-strong)]/72 ${isSelecting && selectedIds.has(item.id) ? "bg-[var(--mimi-primary-soft)]" : ""}`}>
                   {isSelecting ? (
                     <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm font-semibold text-[var(--mimi-text)]">
                       <input type="checkbox" checked={selectedIds.has(item.id)} aria-label={`Select ${item.surfaceText}`} onChange={(event) => {
@@ -727,7 +727,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                     <div className="grid gap-3">
                       <div className="grid gap-3 md:grid-cols-2">
                         <label className="grid gap-1">
-                          <span className="text-sm font-semibold text-[#203229]">Word or phrase</span>
+                          <span className="text-sm font-semibold text-[var(--mimi-text)]">Word or phrase</span>
                           <input
                             value={draft.surfaceText}
                             onChange={(event) => setDraft({ ...draft, surfaceText: event.target.value })}
@@ -735,7 +735,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                           />
                         </label>
                         <label className="grid gap-1">
-                          <span className="text-sm font-semibold text-[#203229]">Chinese meanings</span>
+                          <span className="text-sm font-semibold text-[var(--mimi-text)]">Chinese meanings</span>
                           <textarea
                             rows={2}
                             value={draft.meaningsZhText}
@@ -745,7 +745,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                         </label>
                       </div>
                       <label className="grid gap-1">
-                        <span className="text-sm font-semibold text-[#203229]">Example</span>
+                        <span className="text-sm font-semibold text-[var(--mimi-text)]">Example</span>
                         <textarea
                           rows={2}
                           value={draft.examplesText}
@@ -754,7 +754,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                         />
                       </label>
                       <label className="grid gap-1">
-                        <span className="text-sm font-semibold text-[#203229]">Chinese translations</span>
+                        <span className="text-sm font-semibold text-[var(--mimi-text)]">Chinese translations</span>
                         <textarea
                           rows={2}
                           value={draft.exampleTranslationsZhText}
@@ -763,11 +763,11 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                         />
                       </label>
                       <fieldset className="grid gap-2">
-                        <legend className="text-sm font-semibold text-[#203229]">Learning track</legend>
+                        <legend className="text-sm font-semibold text-[var(--mimi-text)]">Learning track</legend>
                         {historyProfiles?.size ? (
-                          <div className="grid gap-2 rounded-md border border-[#d8d1c2] bg-[#fffaf1] p-3 sm:grid-cols-[1fr_auto] sm:items-center">
-                            <p className="text-sm leading-6 text-[#5f6d62]">
-                              Current: <span className="font-semibold text-[#203229]">{item.learningTrack === "active" ? "Active" : "Recognition"}</span>. {canStartFresh ? "Old progress will stay read-only." : "A retained history already exists in the other Track, so another Track change is unavailable."}
+                          <div className="grid gap-2 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                            <p className="text-sm leading-6 text-[var(--mimi-text-soft)]">
+                              Current: <span className="font-semibold text-[var(--mimi-text)]">{item.learningTrack === "active" ? "Active" : "Recognition"}</span>. {canStartFresh ? "Old progress will stay read-only." : "A retained history already exists in the other Track, so another Track change is unavailable."}
                             </p>
                             {canStartFresh ? (
                               <PressableButton
@@ -796,7 +796,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                             ].map((track) => (
                               <label
                                 key={track.value}
-                                className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] px-3 text-sm font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+                                className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 text-sm font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
                               >
                                 <input
                                   className="sr-only"
@@ -815,12 +815,12 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                         )}
                       </fieldset>
                       <fieldset className="grid gap-2">
-                        <legend className="text-sm font-semibold text-[#203229]">Tags</legend>
+                        <legend className="text-sm font-semibold text-[var(--mimi-text)]">Tags</legend>
                         <div className="flex flex-wrap gap-2">
                           {VOCABULARY_TAGS.map((tag) => (
                             <label
                               key={tag}
-                              className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] px-3 text-xs font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+                              className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 text-xs font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
                             >
                               <input
                                 className="sr-only"
@@ -842,7 +842,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                       </fieldset>
                       <div className="grid gap-3 md:grid-cols-3">
                         <label className="grid gap-1">
-                          <span className="text-sm font-semibold text-[#203229]">Rarity</span>
+                          <span className="text-sm font-semibold text-[var(--mimi-text)]">Rarity</span>
                           <input
                             value={draft.rarityScore}
                             onChange={(event) => setDraft({ ...draft, rarityScore: event.target.value })}
@@ -853,7 +853,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                           />
                         </label>
                         <label className="grid gap-1">
-                          <span className="text-sm font-semibold text-[#203229]">Created at</span>
+                          <span className="text-sm font-semibold text-[var(--mimi-text)]">Created at</span>
                           <input
                             value={draft.createdAt}
                             onChange={(event) => setDraft({ ...draft, createdAt: event.target.value })}
@@ -862,7 +862,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                           />
                         </label>
                         <label className="grid gap-1">
-                          <span className="text-sm font-semibold text-[#203229]">Timezone</span>
+                          <span className="text-sm font-semibold text-[var(--mimi-text)]">Timezone</span>
                           <input
                             value={draft.timezone}
                             onChange={(event) => setDraft({ ...draft, timezone: event.target.value })}
@@ -895,7 +895,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                     <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h2 className="mimi-word-serif text-2xl text-[#203229]">{item.surfaceText}</h2>
+                          <h2 className="mimi-word-serif text-2xl text-[var(--mimi-text)]">{item.surfaceText}</h2>
                           <span className="mimi-pill px-2 py-1 text-xs font-semibold">
                             {getVocabularySourceLabel(data, item)}
                           </span>
@@ -905,7 +905,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                             </span>
                           ) : null}
                           {!item.archivedAt ? (
-                            <span className="rounded-md bg-[var(--mimi-primary-soft)] px-2 py-1 text-xs font-semibold text-[var(--mimi-primary-deep)]">
+                            <span className="rounded-full bg-[var(--mimi-primary-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--mimi-primary-deep)]">
                               {learningStageById.get(item.id) === "in_review" ? "In review" : "New"}
                             </span>
                           ) : null}
@@ -915,43 +915,43 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
                             </span>
                           ))}
                           {weakWordIds.has(item.id) ? (
-                            <span className="rounded-md bg-[#efe0d1] px-2 py-1 text-xs font-semibold text-[#8a4d21]">
+                            <span className="rounded-full bg-[var(--mimi-warning-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--mimi-warning-ink)]">
                               Needs care
                             </span>
                           ) : null}
                           {findIncompleteVocabularyExampleIndexes(itemExamplePairs).length ? (
-                            <span className="rounded-md bg-[#f1e8c8] px-2 py-1 text-xs font-semibold text-[#735f21]">
+                            <span className="rounded-full bg-[var(--mimi-amber-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--mimi-amber-ink)]">
                               Translation needed
                             </span>
                           ) : null}
                           {item.archivedAt ? (
-                            <span className="rounded-md bg-[#efe0d1] px-2 py-1 text-xs font-semibold text-[#8a4d21]">
+                            <span className="rounded-full bg-[var(--mimi-warning-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--mimi-warning-ink)]">
                               Archived
                             </span>
                           ) : null}
                         </div>
                         {itemMeanings.length ? (
-                          <div className="mt-1 grid gap-1 text-sm text-[#5f6d62]">
+                          <div className="mt-1 grid gap-1 text-sm text-[var(--mimi-text-soft)]">
                             {itemMeanings.map((meaning, index) => (
                               <p key={`${item.id}-meaning-${index}`}>{meaning}</p>
                             ))}
                           </div>
                         ) : (
-                          <p className="mt-1 text-sm text-[#5f6d62]">No meaning yet</p>
+                          <p className="mt-1 text-sm text-[var(--mimi-text-soft)]">No meaning yet</p>
                         )}
                         {itemExamplePairs.length ? (
-                          <div className="mt-2 grid gap-1 text-sm leading-6 text-[#203229]">
+                          <div className="mt-2 grid gap-1 text-sm leading-6 text-[var(--mimi-text)]">
                             {itemExamplePairs.map((pair, index) => (
                               <div key={`${item.id}-example-${index}`} className="grid gap-0.5">
                                 <p>{pair.en}</p>
-                                <p className="text-[#6f796f]">
+                                <p className="text-[var(--mimi-text-muted)]">
                                   {pair.zh || "Chinese translation needed"}
                                 </p>
                               </div>
                             ))}
                           </div>
                         ) : null}
-                        <p className="mt-3 text-xs text-[#879087]">
+                        <p className="mt-3 text-xs text-[var(--mimi-text-muted)]">
                           Added {new Date(item.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -1014,7 +1014,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
             })}
           </div>
         ) : (
-          <p className="p-4 text-sm leading-6 text-[#5f6d62]">
+          <p className="p-4 text-sm leading-6 text-[var(--mimi-text-soft)]">
             {isLoaded
               ? filter === "activeVocabulary"
                 ? "No Active Vocabulary yet. Add one in Add Words."
@@ -1051,11 +1051,11 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
         {pendingAction ? (
           <>
             {pendingAction.type === "delete" ? (
-              <Trash2 aria-hidden="true" className="mx-auto size-9 text-[#8a4d21]" />
+              <Trash2 aria-hidden="true" className="mx-auto size-9 text-[var(--mimi-warning-ink)]" />
             ) : pendingAction.type === "startFresh" ? (
               <ArrowRightLeft aria-hidden="true" className="mx-auto size-9 text-[var(--mimi-primary)]" />
             ) : pendingAction.type === "deduplicate" ? (
-              <Trash2 aria-hidden="true" className="mx-auto size-9 text-[#8a4d21]" />
+              <Trash2 aria-hidden="true" className="mx-auto size-9 text-[var(--mimi-warning-ink)]" />
             ) : (
               <RotateCcw aria-hidden="true" className="mx-auto size-9 text-[var(--mimi-primary)]" />
             )}
@@ -1095,7 +1095,7 @@ export function VocabularyLibraryContent({ workspace }: { workspace: ReturnType<
               <PressableButton
                 type="button"
                 onClick={() => void confirmPendingAction()}
-                className="mimi-button mimi-focus-ring inline-flex items-center justify-center px-4 text-sm font-semibold"
+                className={`mimi-button mimi-focus-ring inline-flex items-center justify-center px-4 text-sm font-semibold ${pendingAction.type === "startFresh" ? "" : "mimi-button-danger"}`}
               >
                 YES
               </PressableButton>

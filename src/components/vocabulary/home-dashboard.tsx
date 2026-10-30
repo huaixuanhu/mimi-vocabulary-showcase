@@ -58,8 +58,8 @@ export function HomeDashboard() {
   return (
     <div className="mx-auto grid w-full max-w-5xl gap-4">
       <CalmEntrance className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_270px] lg:items-stretch">
-        <section className="mimi-panel p-4 sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+        <section className="min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-3 px-1">
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-[var(--mimi-primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--mimi-primary-deep)]">
                 <Leaf aria-hidden="true" className="size-3.5" />
@@ -79,7 +79,7 @@ export function HomeDashboard() {
             </Link>
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             <HomeTrackCard
               title="Recognition Vocabulary"
               eyebrow="Reading and meaning"
@@ -87,7 +87,7 @@ export function HomeDashboard() {
               reviewHref="/review?zone=review"
               newLearningHref="/review?zone=new"
               Icon={BookOpen}
-              tone="bg-[#d9e5d5] text-[#274331]"
+              tone="mimi-tone-mint"
             />
             <HomeTrackCard
               title="Active Vocabulary"
@@ -96,21 +96,21 @@ export function HomeDashboard() {
               reviewHref="/practice-lab?zone=review"
               newLearningHref="/practice-lab?zone=new"
               Icon={AudioWaveform}
-              tone="bg-[#e7decb] text-[#5b4c2c]"
+              tone="mimi-tone-peach"
             />
           </div>
         </section>
 
         <section className="mimi-panel-dark p-4 lg:h-full">
           <h2 className="mimi-display-title text-xl text-[var(--mimi-panel-dark-text)]">Library at a glance</h2>
-          <div className="mt-4 grid gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-1">
             {[
               ["Recognition", isLoaded ? recognitionItems.length : "-"],
               ["Active", isLoaded ? activeTrackItems.length : "-"],
               ["Needs care", isLoaded ? weakWordsCount : "-"],
               ["Archived", isLoaded ? archivedItems.length : "-"],
             ].map(([label, value]) => (
-              <div key={label} className="flex items-center justify-between rounded-md border border-[var(--mimi-panel-dark-item-border)] bg-[var(--mimi-panel-dark-item-bg)] px-3 py-2.5">
+              <div key={label} className="flex items-center justify-between rounded-[18px] border border-[var(--mimi-panel-dark-item-border)] bg-[var(--mimi-panel-dark-item-bg)] px-3 py-2.5">
                 <span className="text-sm text-[var(--mimi-panel-dark-muted)]">{label}</span>
                 <span className="text-lg font-semibold text-[var(--mimi-panel-dark-text)]">{value}</span>
               </div>
@@ -130,9 +130,9 @@ export function HomeDashboard() {
             </Link>
           </div>
           {latestItems.length ? (
-            <div className="grid gap-3">
+            <div className="divide-y divide-[var(--mimi-border)]">
               {latestItems.map((item) => (
-                <div key={item.id} className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface)] px-3 py-2.5">
+                <div key={item.id} className="py-3 first:pt-1 last:pb-0">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="mimi-word-serif text-xl text-[var(--mimi-text)]">{item.surfaceText}</p>
                     <span className="mimi-pill px-2 py-1 text-xs font-semibold">
@@ -152,7 +152,7 @@ export function HomeDashboard() {
 
         <section className="mimi-panel p-4">
           <div className="flex items-start gap-3">
-            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]">
+            <span className="mimi-gel-chip mimi-tone-mint inline-flex size-10 shrink-0 items-center justify-center rounded-full">
               <AudioWaveform aria-hidden="true" className="size-4.5" />
             </span>
             <div>

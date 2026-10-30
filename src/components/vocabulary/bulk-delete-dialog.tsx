@@ -53,7 +53,7 @@ export function BulkDeleteDialog({ items, onCancel, onDelete }: BulkDeleteDialog
       type="button"
       disabled={isDeleting || items.length === 0}
       onClick={() => void confirm()}
-      className="mimi-button mimi-focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold disabled:opacity-50"
+      className="mimi-button mimi-button-danger mimi-focus-ring inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold disabled:opacity-50"
     >
       {isDeleting ? "Deleting…" : step === "final" ? "Yes · 确认删除" : "Yes · 继续"}
     </PressableButton>
@@ -69,7 +69,7 @@ export function BulkDeleteDialog({ items, onCancel, onDelete }: BulkDeleteDialog
       panelClassName="max-w-md text-center sm:max-w-md"
       dismissOnBackdrop={false}
     >
-      <Trash2 aria-hidden="true" className="mx-auto size-9 text-[#8a4d21]" />
+      <Trash2 aria-hidden="true" className="mx-auto size-9 text-[var(--mimi-warning-ink)]" />
       <h2 id="bulk-delete-title" className="mimi-cjk mt-4 text-xl font-semibold text-[var(--mimi-text)]">
         {step === "review" ? `确认删除这 ${items.length} 个词条？` : "再次确认真的确认要删除吗？"}
       </h2>
@@ -79,7 +79,7 @@ export function BulkDeleteDialog({ items, onCancel, onDelete }: BulkDeleteDialog
       <ul tabIndex={0} aria-label="待删除单词" className="mimi-focus-ring mt-3 max-h-48 overflow-y-auto rounded-md border border-[var(--mimi-border)] px-4 py-2 text-left text-sm text-[var(--mimi-text)]">
         {items.map((item) => <li key={item.id} className="break-words py-1">{item.surfaceText}</li>)}
       </ul>
-      {error ? <p role="alert" className="mt-3 text-sm text-[#8a4d21]">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-[var(--mimi-warning-ink)]">{error}</p> : null}
       {isDeleting ? <p role="status" className="mt-3 text-sm text-[var(--mimi-text-soft)]">Deleting selected words…</p> : null}
       <div className="mt-5 grid grid-cols-2 gap-3">
         {step === "review" ? [cancelButton, confirmButton] : [confirmButton, cancelButton]}

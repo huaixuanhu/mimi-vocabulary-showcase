@@ -70,16 +70,16 @@ export function DashboardInsights({ data, isLoaded, getRuntimeNow }: DashboardIn
               Insights
             </h2>
           </div>
-          <div className="inline-flex rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-0.5" role="group" aria-label="Insights Track">
+          <div className="mimi-glass-tray inline-flex rounded-full p-1" role="group" aria-label="Insights Track">
             {(["recognition", "active"] as const).map((reviewProfile) => (
               <button
                 key={reviewProfile}
                 type="button"
                 aria-pressed={selectedTrack === reviewProfile}
                 onClick={() => setSelectedTrack(reviewProfile)}
-                className={`mimi-focus-ring min-h-10 rounded px-3 text-xs font-semibold transition-colors ${
+                className={`mimi-focus-ring mimi-press min-h-11 rounded-full px-3.5 text-xs font-semibold ${
                   selectedTrack === reviewProfile
-                    ? "bg-[var(--mimi-surface-strong)] text-[var(--mimi-primary-deep)] shadow-sm"
+                    ? "mimi-gel-thumb text-[var(--mimi-on-thumb)]"
                     : "text-[var(--mimi-text-soft)]"
                 }`}
               >

@@ -96,7 +96,7 @@ export function AddWordForm() {
   return (
     <form className="grid gap-4" aria-label="Add word" onSubmit={handleSubmit}>
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[#203229]">Word or phrase</span>
+        <span className="text-sm font-semibold text-[var(--mimi-text)]">Word or phrase</span>
         <input
           name="word_or_phrase"
           required
@@ -106,7 +106,7 @@ export function AddWordForm() {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[#203229]">中文释义</span>
+        <span className="text-sm font-semibold text-[var(--mimi-text)]">中文释义</span>
         <input
           name="meaning_zh"
           placeholder="分配"
@@ -115,7 +115,7 @@ export function AddWordForm() {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[#203229]">Example</span>
+        <span className="text-sm font-semibold text-[var(--mimi-text)]">Example</span>
         <textarea
           name="example"
           rows={3}
@@ -125,7 +125,7 @@ export function AddWordForm() {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[#203229]">例句中文翻译</span>
+        <span className="text-sm font-semibold text-[var(--mimi-text)]">例句中文翻译</span>
         <textarea
           name="example_translation_zh"
           rows={2}
@@ -135,7 +135,7 @@ export function AddWordForm() {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[#203229]">Notes</span>
+        <span className="text-sm font-semibold text-[var(--mimi-text)]">Notes</span>
         <textarea
           name="notes"
           rows={2}
@@ -144,7 +144,7 @@ export function AddWordForm() {
       </label>
 
       <fieldset className="grid gap-2">
-        <legend className="text-sm font-semibold text-[#203229]">Learning track</legend>
+        <legend className="text-sm font-semibold text-[var(--mimi-text)]">Learning track</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {[
             { value: "recognition", label: "Recognition / 阅读词汇" },
@@ -152,7 +152,7 @@ export function AddWordForm() {
           ].map((track) => (
             <label
               key={track.value}
-              className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] px-3 text-sm font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+              className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 text-sm font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
             >
               <input
                 className="sr-only"
@@ -169,12 +169,12 @@ export function AddWordForm() {
       </fieldset>
 
       <fieldset className="grid gap-2">
-        <legend className="text-sm font-semibold text-[#203229]">Tags</legend>
+        <legend className="text-sm font-semibold text-[var(--mimi-text)]">Tags</legend>
         <div className="flex flex-wrap gap-2">
           {VOCABULARY_TAGS.map((tag) => (
             <label
               key={tag}
-              className="mimi-focus-ring flex min-h-9 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] px-3 text-xs font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+              className="mimi-focus-ring flex min-h-9 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] px-3 text-xs font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
             >
               <input
                 className="sr-only"
@@ -196,12 +196,12 @@ export function AddWordForm() {
       </fieldset>
 
       <fieldset className="grid gap-2">
-        <legend className="text-sm font-semibold text-[#203229]">Self-rated rarity</legend>
+        <legend className="text-sm font-semibold text-[var(--mimi-text)]">Self-rated rarity</legend>
         <div className="grid grid-cols-5 gap-2">
           {[1, 2, 3, 4, 5].map((score) => (
             <label
               key={score}
-              className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[#d8d1c2] bg-[#fffaf1] text-sm font-semibold text-[#203229] transition has-checked:border-[#5f7d66] has-checked:bg-[#d9e5d5]"
+              className="mimi-focus-ring flex min-h-11 items-center justify-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] text-sm font-semibold text-[var(--mimi-text)] transition has-checked:border-[var(--mimi-primary)] has-checked:bg-[var(--mimi-primary-soft)]"
             >
               <input
                 className="sr-only"
@@ -233,9 +233,9 @@ export function AddWordForm() {
       </PressableButton>
 
       {showAddedTime ? (
-        <div className="grid gap-4 rounded-md border border-[#d8d1c2] bg-[#efe9dc] p-3">
+        <div className="grid gap-4 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-3">
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-[#203229]">Created at</span>
+            <span className="text-sm font-semibold text-[var(--mimi-text)]">Created at</span>
             <input
               name="created_at"
               type="datetime-local"
@@ -245,7 +245,7 @@ export function AddWordForm() {
             />
           </label>
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-[#203229]">Timezone</span>
+            <span className="text-sm font-semibold text-[var(--mimi-text)]">Timezone</span>
             <input
               name="timezone"
               value={timezone}
@@ -264,7 +264,7 @@ export function AddWordForm() {
         保存
       </PressableButton>
 
-      {message ? <p className="rounded-md bg-[#d9e5d5] px-3 py-2 text-sm text-[#274331]">{message}</p> : null}
+      {message ? <p className="rounded-md bg-[var(--mimi-primary-soft)] px-3 py-2 text-sm text-[var(--mimi-primary-deep)]">{message}</p> : null}
     </form>
   );
 }

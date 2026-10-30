@@ -11,6 +11,7 @@ type AppShellProps = {
 export function AppShell({ title, children }: AppShellProps) {
   return (
     <div className="mimi-shell">
+      <div className="mimi-mist" aria-hidden="true" />
       <div className="min-h-dvh lg:flex">
         <DesktopSidebar />
 

@@ -49,6 +49,7 @@ type CloudSpeechDependencies = Readonly<{
   createRequestId?: () => string;
   playAudioBlob?: (blob: Blob) => Promise<void>;
   sourcePreference?: SpeechSourcePreference;
+  playbackOwner?: symbol;
 }>;
 
 export const SPEECH_VOICE_STORAGE_KEY = "mimi-showcase-english-voice-v1";
@@ -296,6 +297,7 @@ let activeCloudAudio: HTMLAudioElement | null = null;
 let activeCloudAudioCleanup: (() => void) | null = null;
 let activeCloudRequest: AbortController | null = null;
 let activePlaybackGeneration = 0;
+let activePlaybackOwner: symbol | null = null;
 let currentCloudVoiceContract = "";
 const cloudAudioMemory = new Map<string, Blob>();
 const CLOUD_AUDIO_MEMORY_LIMIT = 32;
@@ -338,8 +340,12 @@ function browserPlayAudioBlob(blob: Blob) {
   });
 }
 
-export function cancelEnglishSpeech() {
+export function cancelEnglishSpeech(playbackOwner?: symbol) {
+  // An exiting card/dialog may unmount after a different owner has started.
+  // Only source changes and explicit global stops cancel every owner's audio.
+  if (playbackOwner !== undefined && playbackOwner !== activePlaybackOwner) return;
   activePlaybackGeneration += 1;
+  activePlaybackOwner = null;
   activeCloudRequest?.abort();
   activeCloudRequest = null;
   activeCloudAudio?.pause();
@@ -388,6 +394,7 @@ export async function speakEnglishText(
   }
 
   cancelEnglishSpeech();
+  activePlaybackOwner = dependencies.playbackOwner ?? null;
   const sourcePreference =
     dependencies.sourcePreference ?? readSpeechSourcePreference();
   if (sourcePreference === "device") {

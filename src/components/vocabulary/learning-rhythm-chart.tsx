@@ -57,16 +57,16 @@ export const LearningRhythmChart = memo(function LearningRhythmChart({
             <span className="mimi-pill-muted px-2 py-0.5 text-[0.68rem] font-semibold">Actual</span>
           </div>
         </div>
-        <div className="inline-flex rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-0.5" role="group" aria-label="Learning rhythm range">
+        <div className="mimi-glass-tray inline-flex rounded-full p-1" role="group" aria-label="Learning rhythm range">
           {([7, 14] as const).map((value) => (
             <button
               key={value}
               type="button"
               aria-pressed={period === value}
               onClick={() => onPeriodChange(value)}
-              className={`mimi-focus-ring min-h-9 rounded px-2.5 text-xs font-semibold transition-colors ${
+              className={`mimi-focus-ring mimi-press min-h-11 rounded-full px-3 text-xs font-semibold ${
                 period === value
-                  ? "bg-[var(--mimi-surface-strong)] text-[var(--mimi-primary-deep)] shadow-sm"
+                  ? "mimi-gel-thumb text-[var(--mimi-on-thumb)]"
                   : "text-[var(--mimi-text-soft)]"
               }`}
             >
@@ -82,7 +82,7 @@ export const LearningRhythmChart = memo(function LearningRhythmChart({
           New words · <strong className="font-semibold text-[var(--mimi-text)]">{totalLearned}</strong>
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span aria-hidden="true" className="size-2.5 rounded-sm border border-[#9a8758] bg-[var(--mimi-amber)]" />
+          <span aria-hidden="true" className="size-2.5 rounded-sm border border-[var(--mimi-amber-line)] bg-[var(--mimi-amber)]" />
           Reviewed · <strong className="font-semibold text-[var(--mimi-text)]">{totalReviewed}</strong>
         </span>
       </div>
@@ -109,7 +109,7 @@ export const LearningRhythmChart = memo(function LearningRhythmChart({
                       style={{ height: `${barHeight(point.learned, maximum)}%` }}
                     />
                     <span
-                      className="w-[42%] max-w-4 rounded-t-sm border border-[#9a8758] bg-[var(--mimi-amber)]"
+                      className="w-[42%] max-w-4 rounded-t-sm border border-[var(--mimi-amber-line)] bg-[var(--mimi-amber)]"
                       style={{ height: `${barHeight(point.reviewed, maximum)}%` }}
                     />
                   </div>

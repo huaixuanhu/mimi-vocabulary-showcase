@@ -52,10 +52,10 @@ export function PendingSaveRecoveryDialog({ recovery, onCancel, onContinue }: Pr
       <label className="mt-4 flex min-h-11 items-start gap-3 text-sm leading-6">
         <input type="checkbox" checked={checked} disabled={busy}
           onChange={(event) => setChecked(event.target.checked)}
-          className="mimi-focus-ring mt-1 size-5 shrink-0 accent-[var(--mimi-sage)]" />
+          className="mimi-focus-ring mt-1 size-5 shrink-0 accent-[var(--mimi-primary)]" />
         <span>我已关闭本网站的其他页面，并核对过这位学习者的词库和最近操作。</span>
       </label>
-      {error ? <p role="alert" className="mt-3 text-sm text-[#8a4d21]">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-[var(--mimi-warning-ink)]">{error}</p> : null}
       <div className="mt-5 flex flex-wrap justify-end gap-3">
         <button type="button" disabled={busy} onClick={onCancel}
           className="mimi-button-secondary mimi-focus-ring min-h-11 px-4 text-sm font-semibold disabled:opacity-50">取消</button>

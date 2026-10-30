@@ -40,7 +40,7 @@ export function ThemeSettingsForm() {
               onClick={() => setTheme(option.value)}
               className={`mimi-focus-ring mimi-card-interactive min-h-24 rounded-md border p-4 text-left transition duration-200 ease-[var(--mimi-ease)] ${
                 active
-                  ? "border-[var(--mimi-primary)] bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)] shadow-[0_14px_30px_rgb(31_47_38/0.14)]"
+                  ? "border-[var(--mimi-primary)] bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)] shadow-[var(--mimi-shadow-soft)]"
                   : "border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] text-[var(--mimi-text)] hover:border-[var(--mimi-border-strong)]"
               }`}
             >

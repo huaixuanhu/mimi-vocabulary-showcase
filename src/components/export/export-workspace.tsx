@@ -52,9 +52,9 @@ function SummaryGrid({ data }: { data: VocabularyData }) {
         ["In review", counts.reviewStates],
         ["Review attempts", counts.reviewEvents],
       ].map(([label, value]) => (
-        <div key={label} className="rounded-md bg-[#efe9dc] p-3">
-          <p className="text-xs font-semibold text-[#5f6d62]">{label}</p>
-          <p className="mt-1 text-xl font-semibold text-[#203229]">{value}</p>
+        <div key={label} className="rounded-md bg-[var(--mimi-surface-muted)] p-3">
+          <p className="text-xs font-semibold text-[var(--mimi-text-soft)]">{label}</p>
+          <p className="mt-1 text-xl font-semibold text-[var(--mimi-text)]">{value}</p>
         </div>
       ))}
     </div>
@@ -63,7 +63,7 @@ function SummaryGrid({ data }: { data: VocabularyData }) {
 
 function ErrorList({ result }: { result: Extract<BackupParseResult, { ok: false }> }) {
   return (
-    <div className="rounded-md border border-[#d8aaa2] bg-[#fff4ef] p-3 text-sm text-[#7a3421]">
+    <div className="rounded-md border border-[var(--mimi-danger-line)] bg-[var(--mimi-danger-soft)] p-3 text-sm text-[var(--mimi-danger-ink)]">
       <div className="flex items-start gap-2">
         <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
         <div>
@@ -160,7 +160,7 @@ export function ExportWorkspace() {
   return (
     <div className="grid gap-4">
       <SimplePanel title="Your data">
-        {isLoaded ? <SummaryGrid data={data} /> : <p className="text-sm text-[#5f6d62]">Loading data...</p>}
+        {isLoaded ? <SummaryGrid data={data} /> : <p className="text-sm text-[var(--mimi-text-soft)]">Loading data...</p>}
       </SimplePanel>
 
       <SimplePanel title="Download">
@@ -184,13 +184,13 @@ export function ExportWorkspace() {
             Vocabulary list
           </PressableButton>
         </div>
-        {message ? <p className="mt-3 rounded-md bg-[#d9e5d5] px-3 py-2 text-sm text-[#274331]">{message}</p> : null}
+        {message ? <p className="mt-3 rounded-md bg-[var(--mimi-primary-soft)] px-3 py-2 text-sm text-[var(--mimi-primary-deep)]">{message}</p> : null}
       </SimplePanel>
 
       <SimplePanel title="Restore">
         <div className="grid gap-3 md:grid-cols-[1fr_auto]">
           <label className="grid gap-2">
-            <span className="text-sm font-semibold text-[#203229]">Backup file</span>
+            <span className="text-sm font-semibold text-[var(--mimi-text)]">Backup file</span>
             <input
               ref={fileInputRef}
               type="file"
@@ -211,7 +211,7 @@ export function ExportWorkspace() {
 
         {restoreResult?.ok ? (
           <div className="mt-4 grid gap-4">
-            <div className="rounded-md border border-[#d8d1c2] bg-[#efe9dc] p-3 text-sm text-[#203229]">
+            <div className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-3 text-sm text-[var(--mimi-text)]">
               <p>Exported at: {new Date(restoreResult.backup.metadata.exportedAt).toLocaleString()}</p>
               <p>Timezone: {restoreResult.backup.metadata.timezone}</p>
             </div>

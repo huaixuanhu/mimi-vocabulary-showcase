@@ -90,6 +90,8 @@ export function ExampleWordActions({
   const dialogRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const playbackOwnerRef = useRef(Symbol("example-word"));
+  const playbackRequestRef = useRef(0);
   const duplicate = useMemo(
     () =>
       selectedWord
@@ -146,7 +148,13 @@ export function ExampleWordActions({
     };
   }, [selectedWord]);
 
-  useEffect(() => () => cancelEnglishSpeech(), [selectedWord?.text]);
+  useEffect(() => {
+    const playbackOwner = playbackOwnerRef.current;
+    return () => {
+      playbackRequestRef.current += 1;
+      cancelEnglishSpeech(playbackOwner);
+    };
+  }, [selectedWord?.text]);
 
   const openWordActions = (word: SelectedWord, trigger: HTMLButtonElement) => {
     triggerButtonRef.current = trigger;
@@ -160,6 +168,7 @@ export function ExampleWordActions({
     setMessage("");
     setIsSaving(false);
     setIsExplaining(false);
+    setIsListening(false);
     setExplanation(null);
     setFormalDisclosureAccepted(false);
     setModelNotice(LOCAL_FIXTURE_LINEAGE.notice);
@@ -176,9 +185,13 @@ export function ExampleWordActions({
     if (!selectedWord || isListening) {
       return;
     }
+    const requestNumber = ++playbackRequestRef.current;
     setIsListening(true);
     try {
-      const result = await speakEnglishText(selectedWord.text, "example-word");
+      const result = await speakEnglishText(selectedWord.text, "example-word", {
+        playbackOwner: playbackOwnerRef.current,
+      });
+      if (requestNumber !== playbackRequestRef.current) return;
       setMessage(
         result.status === "unsupported"
           ? "Speech is not available in this browser."
@@ -191,7 +204,7 @@ export function ExampleWordActions({
             : "Choose a word to hear it.",
       );
     } finally {
-      setIsListening(false);
+      if (requestNumber === playbackRequestRef.current) setIsListening(false);
     }
   };
 
@@ -326,7 +339,7 @@ export function ExampleWordActions({
       ? createPortal(
           <div
             data-card-toggle-ignore="true"
-            className="fixed inset-0 z-[70] flex items-end bg-[#14251d]/48 px-3 pt-8 backdrop-blur-[2px] sm:items-center sm:justify-center sm:p-6"
+            className="fixed inset-0 z-[70] flex items-end bg-[var(--mimi-backdrop)] px-3 pt-8 backdrop-blur-[2px] sm:items-center sm:justify-center sm:p-6"
             onPointerDown={(event) => {
               if (event.target === event.currentTarget) {
                 closeWordActions();
@@ -338,7 +351,7 @@ export function ExampleWordActions({
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
-              className="mimi-card max-h-[88dvh] w-full overflow-y-auto rounded-b-none p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_24px_70px_rgb(20_37_29/0.28)] sm:max-w-lg sm:rounded-lg sm:p-5"
+              className="mimi-dialog-sheet max-h-[88dvh] w-full overflow-y-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:max-w-lg sm:p-5"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -357,7 +370,7 @@ export function ExampleWordActions({
                   type="button"
                   onClick={closeWordActions}
                   aria-label="Close word actions"
-                  className="mimi-button-secondary mimi-focus-ring grid size-11 shrink-0 place-items-center"
+                  className="mimi-icon-button mimi-focus-ring grid size-11 shrink-0 place-items-center"
                 >
                   <X aria-hidden="true" className="size-4" />
                 </button>

@@ -76,7 +76,7 @@ export function DailyStudyBoard() {
       ) : null}
       <div className="mimi-panel flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
         <div className="flex items-center gap-3">
-          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]">
+          <span className="mimi-gel-chip mimi-tone-mint inline-flex size-10 shrink-0 items-center justify-center rounded-full">
             <CalendarDays aria-hidden="true" className="size-5" />
           </span>
           <div>

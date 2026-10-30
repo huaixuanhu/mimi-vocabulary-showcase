@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CheckCircle2, Ear, Eye, Keyboard, Mic2, Undo2, Volume2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -12,7 +12,15 @@ import {
   type DailyStudyQueueResult,
   useDailyStudy,
 } from "@/components/study/use-daily-study";
-import { PressableButton } from "@/components/ui/motion-primitives";
+import {
+  answerUnfold,
+  mistCardFrom,
+  mistCardIn,
+  mistCardTo,
+  mistExit,
+  PressableButton,
+  reducedFade,
+} from "@/components/ui/motion-primitives";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useWordPronunciation } from "@/components/use-word-pronunciation";
 import {
@@ -192,6 +200,7 @@ export function ActivePracticeSession({ zone, mode }: Props) {
 
     requestKeyRef.current = requestKey;
     let cancelled = false;
+    let settled = false;
     setIsLoading(true);
     setMessage("");
 
@@ -222,6 +231,8 @@ export function ActivePracticeSession({ zone, mode }: Props) {
         }
       })
       .finally(() => {
+        settled = true;
+
         if (!cancelled) {
           setIsLoading(false);
         }
@@ -229,6 +240,12 @@ export function ActivePracticeSession({ zone, mode }: Props) {
 
     return () => {
       cancelled = true;
+
+      // A cancelled pending request never applies its queue, so let the next run
+      // for this key ask again (React Strict Mode replays mount effects in dev).
+      if (!settled) {
+        requestKeyRef.current = "";
+      }
     };
   }, [isLoaded, mode, selectedPersonId, zone]);
 
@@ -604,7 +621,7 @@ export function ActivePracticeSession({ zone, mode }: Props) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
-      <section className="mimi-panel p-4 sm:p-6">
+      <section className="min-w-0">
         <div className="mb-5">
           <LearningZoneTabs
             zone={zone}
@@ -644,20 +661,19 @@ export function ActivePracticeSession({ zone, mode }: Props) {
           <div className="mimi-progress-fill h-full" style={{ width: `${progressPercent}%` }} />
         </div>
 
-        <div className="grid min-h-[24rem] place-items-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-4 text-center sm:p-8">
+        <div className="relative grid min-h-[24rem] place-items-center text-center">
+          <AnimatePresence mode="popLayout">
           {currentItem ? (
             <motion.div
               key={`${currentItem.id}:${mode}`}
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: reduceMotion ? 0.12 : 0.34,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="mimi-card grid w-full max-w-2xl gap-5 bg-[var(--mimi-surface)] p-5 sm:p-8"
+              initial={reduceMotion ? { opacity: 0 } : mistCardFrom}
+              animate={reduceMotion ? { opacity: 1 } : mistCardTo}
+              exit={reduceMotion ? { opacity: 0, transition: reducedFade } : mistExit}
+              transition={reduceMotion ? reducedFade : mistCardIn}
+              className="mimi-card mimi-card-hero grid w-full max-w-2xl gap-5 p-6 sm:p-9"
             >
               <div>
-                <p className="text-xs font-semibold uppercase text-[var(--mimi-text-muted)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--mimi-text-muted)]">
                   {mode === "dictation" ? "Listen" : "Meaning"}
                 </p>
                 {mode === "dictation" ? (
@@ -741,11 +757,12 @@ export function ActivePracticeSession({ zone, mode }: Props) {
 
               {revealed ? (
                 <motion.div
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: reduceMotion ? 0.12 : 0.26 }}
-                  className="border-t border-[var(--mimi-border)] pt-5"
+                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, filter: "blur(6px)" }}
+                  animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto", filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+                  transition={reduceMotion ? reducedFade : answerUnfold}
+                  className="overflow-hidden"
                 >
+                  <div className="border-t border-[var(--mimi-border)] pt-5">
                   <div className="flex items-start justify-center gap-3">
                     <p className="mimi-word-serif min-w-0 break-words text-4xl text-[var(--mimi-text)] sm:text-5xl">
                       {currentItem.surfaceText}
@@ -756,7 +773,7 @@ export function ActivePracticeSession({ zone, mode }: Props) {
                       disabled={isListening}
                       aria-busy={isListening}
                       aria-label={`Listen to ${currentItem.surfaceText}`}
-                      className="mimi-button-secondary mimi-focus-ring grid size-11 shrink-0 place-items-center"
+                      className="mimi-icon-button mimi-focus-ring grid size-11 shrink-0 place-items-center"
                     >
                       <Volume2 aria-hidden="true" className="size-4" />
                     </PressableButton>
@@ -771,11 +788,12 @@ export function ActivePracticeSession({ zone, mode }: Props) {
                       ))}
                     </div>
                   ) : null}
+                  </div>
                 </motion.div>
               ) : null}
             </motion.div>
           ) : (
-            <div className="mimi-card grid max-w-md place-items-center gap-3 bg-[var(--mimi-surface)] p-7 text-center">
+            <div key="practice-empty" className="mimi-card mimi-card-hero grid max-w-md place-items-center gap-3 p-7 text-center">
               <CheckCircle2 aria-hidden="true" className="size-10 text-[var(--mimi-primary)]" />
               <p className="text-lg font-semibold text-[var(--mimi-text)]">
                 {isLoading || sessionIds === null
@@ -799,6 +817,7 @@ export function ActivePracticeSession({ zone, mode }: Props) {
               </div>
             </div>
           )}
+          </AnimatePresence>
         </div>
 
         {currentItem && revealed ? (
@@ -825,10 +844,10 @@ export function ActivePracticeSession({ zone, mode }: Props) {
                     }
                   }}
                   onClick={(event) => void submitRating(rating.value, event.timeStamp)}
-                  className={`mimi-rating-button mimi-rating-${rating.value} mimi-focus-ring min-h-14 rounded-md border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50`}
+                  className={`mimi-rating-button mimi-rating-${rating.value} mimi-focus-ring min-h-14 border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50`}
                 >
                   <span className="block">{rating.label}</span>
-                  <span className="mt-1 block text-xs font-medium text-[var(--mimi-text-soft)]">{rating.interval}</span>
+                  <span className="mimi-rating-sub mt-1 block text-xs font-medium">{rating.interval}</span>
                 </PressableButton>
               ))}
             </div>

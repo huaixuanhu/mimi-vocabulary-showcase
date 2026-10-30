@@ -67,11 +67,11 @@ export default async function PracticeLabPage({
             />
           </div>
           <div className="flex items-start gap-4">
-            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-md bg-[#d9e5d5] text-[#274331]">
+            <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-md bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]">
               <AudioWaveform aria-hidden="true" className="size-6" />
             </span>
             <div>
-              <h2 className="mimi-display-title text-3xl text-[#203229]">Active Vocabulary</h2>
+              <h2 className="mimi-display-title text-3xl text-[var(--mimi-text)]">Active Vocabulary</h2>
             </div>
           </div>
 
@@ -83,13 +83,13 @@ export default async function PracticeLabPage({
                 <Link
                   key={module.title}
                   href={`/practice-lab?zone=${zone}&mode=${module.mode}`}
-                  className="mimi-focus-ring rounded-md border border-[#d8d1c2] bg-[#fffaf1] p-4 transition duration-200 ease-[var(--mimi-ease)] hover:-translate-y-0.5 hover:border-[var(--mimi-border-strong)]"
+                  className="mimi-focus-ring rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] p-4 transition duration-200 ease-[var(--mimi-ease)] hover:-translate-y-0.5 hover:border-[var(--mimi-border-strong)]"
                 >
-                  <span className="inline-flex size-10 items-center justify-center rounded-md bg-[#eef0df] text-[#425f4a]">
+                  <span className="inline-flex size-10 items-center justify-center rounded-md bg-[var(--mimi-bg-panel)] text-[var(--mimi-primary-dark)]">
                     <Icon aria-hidden="true" className="size-5" />
                   </span>
-                  <h3 className="mimi-display-title mt-4 text-xl text-[#203229]">{module.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-[#5f6d62]">{module.description}</p>
+                  <h3 className="mimi-display-title mt-4 text-xl text-[var(--mimi-text)]">{module.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-[var(--mimi-text-soft)]">{module.description}</p>
                   <span className="mimi-pill mt-4 inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold">
                     Start
                     <ArrowRight aria-hidden="true" className="size-3" />

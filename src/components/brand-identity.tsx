@@ -7,8 +7,8 @@ type BrandIdentityProps = {
 export function BrandIdentity({ variant }: BrandIdentityProps) {
   if (variant === "sidebar") {
     return (
-      <div className="mimi-brand-card grid gap-3 rounded-md border p-3 text-center shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]">
-        <div className="relative aspect-square overflow-hidden rounded-md border border-[#afbea9]/28 bg-[#24372f]">
+      <div className="mimi-brand-card grid gap-3 rounded-[28px] border p-3 text-center">
+        <div className="mimi-brand-avatar relative aspect-square overflow-hidden">
           <Image
             src="/brand/mimi-cats.png"
             alt="咪咪的猫咪头像"
@@ -24,8 +24,8 @@ export function BrandIdentity({ variant }: BrandIdentityProps) {
   }
 
   return (
-    <div className="mimi-brand-card flex items-center gap-3 rounded-md border px-2 py-2">
-      <div className="relative size-11 shrink-0 overflow-hidden rounded-md border border-[#afbea9]/28 bg-[#24372f]">
+    <div className="mimi-brand-card flex items-center gap-3 rounded-full border py-1 pl-1 pr-4">
+      <div className="mimi-brand-avatar relative size-11 shrink-0 overflow-hidden">
         <Image
           src="/brand/mimi-cats.png"
           alt="咪咪的猫咪头像"

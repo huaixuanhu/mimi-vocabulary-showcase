@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { TtsPurpose } from "@/lib/tts/contract";
 import {
   cancelEnglishSpeech,
@@ -13,7 +13,7 @@ type UseWordPronunciationOptions = Readonly<{
   activationKey: string | null;
   autoPlay: boolean;
   unsupportedMessage: string;
-  onMessage: (message: string) => void;
+  onMessage: Dispatch<SetStateAction<string>>;
 }>;
 
 export function useWordPronunciation({
@@ -29,6 +29,8 @@ export function useWordPronunciation({
   const inFlightRef = useRef(false);
   const requestNumberRef = useRef(0);
   const autoPlayedKeyRef = useRef("");
+  const playbackOwnerRef = useRef(Symbol("word-pronunciation"));
+  const playbackErrorRef = useRef<string | null>(null);
 
   useEffect(() => {
     latestRef.current = { text, purpose, unsupportedMessage, onMessage };
@@ -46,17 +48,26 @@ export function useWordPronunciation({
     setIsPlaying(true);
 
     try {
-      const result = await speakEnglishText(current.text, current.purpose);
+      const result = await speakEnglishText(current.text, current.purpose, {
+        playbackOwner: playbackOwnerRef.current,
+      });
       if (requestNumber !== requestNumberRef.current) {
         return;
       }
 
       if (result.status === "unsupported") {
+        playbackErrorRef.current = current.unsupportedMessage;
         current.onMessage(current.unsupportedMessage);
       } else if (result.status === "unavailable") {
+        playbackErrorRef.current = result.message;
         current.onMessage(result.message);
       } else if (result.status === "spoken" && result.source === "local-fixture") {
+        playbackErrorRef.current = null;
         current.onMessage("Local preview audio played.");
+      } else if (result.status === "spoken" && playbackErrorRef.current !== null) {
+        const recoveredMessage = playbackErrorRef.current;
+        playbackErrorRef.current = null;
+        current.onMessage((message) => message === recoveredMessage ? "" : message);
       }
     } finally {
       if (requestNumber === requestNumberRef.current) {
@@ -67,9 +78,17 @@ export function useWordPronunciation({
   }, []);
 
   useEffect(() => {
+    const playbackOwner = playbackOwnerRef.current;
+    const requestNumber = requestNumberRef.current;
+    queueMicrotask(() => {
+      if (requestNumber === requestNumberRef.current && !inFlightRef.current) {
+        setIsPlaying(false);
+      }
+    });
     return () => {
       inFlightRef.current = false;
-      cancelEnglishSpeech();
+      requestNumberRef.current += 1;
+      cancelEnglishSpeech(playbackOwner);
     };
   }, [activationKey]);
 

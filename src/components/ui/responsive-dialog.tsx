@@ -13,6 +13,8 @@ const FOCUSABLE_SELECTOR = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+const sheetSpring = { type: "spring", visualDuration: 0.36, bounce: 0.22 } as const;
+
 type ResponsiveDialogProps = {
   open: boolean;
   onClose: () => void;
@@ -119,7 +121,7 @@ export function ResponsiveDialog({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="mimi-dialog-backdrop fixed inset-0 z-[80] flex items-end bg-[#14251d]/55 px-3 pt-8 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
+          className="mimi-dialog-backdrop fixed inset-0 z-[80] flex items-end bg-[var(--mimi-backdrop)] px-3 pt-8 backdrop-blur-sm sm:items-center sm:justify-center sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -137,11 +139,11 @@ export function ResponsiveDialog({
             aria-labelledby={labelledBy}
             aria-describedby={describedBy}
             tabIndex={-1}
-            className={`mimi-card mimi-responsive-dialog max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-b-none p-4 shadow-[0_24px_70px_rgb(20_37_29/0.28)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-lg sm:p-6 ${panelClassName}`}
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.985 }}
+            className={`mimi-card mimi-dialog-sheet mimi-responsive-dialog max-h-[calc(100dvh-2rem)] w-full overflow-y-auto p-5 sm:max-h-[calc(100dvh-3rem)] sm:p-6 ${panelClassName}`}
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 28, scale: 0.985 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.985 }}
-            transition={{ duration: reduceMotion ? 0.12 : 0.26, ease: [0.22, 1, 0.36, 1] }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.985 }}
+            transition={{ duration: reduceMotion ? 0.12 : 0.26, ease: [0.22, 1, 0.36, 1], y: sheetSpring, scale: sheetSpring }}
           >
             {children}
           </motion.section>

@@ -13,7 +13,15 @@ import {
   type DailyStudyQueueResult,
   useDailyStudy,
 } from "@/components/study/use-daily-study";
-import { PressableButton } from "@/components/ui/motion-primitives";
+import {
+  answerUnfold,
+  mistCardFrom,
+  mistCardIn,
+  mistCardTo,
+  mistExit,
+  PressableButton,
+  reducedFade,
+} from "@/components/ui/motion-primitives";
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog";
 import { useWordPronunciation } from "@/components/use-word-pronunciation";
 import type { StudyZone } from "@/lib/daily-study/types";
@@ -182,6 +190,7 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
 
     requestedSessionKeyRef.current = sessionKey;
     let cancelled = false;
+    let settled = false;
     setIsSessionLoading(true);
     setMessage("");
 
@@ -221,6 +230,8 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
         setMessage(error instanceof Error ? error.message : "Could not prepare this study zone");
       })
       .finally(() => {
+        settled = true;
+
         if (!cancelled) {
           setIsSessionLoading(false);
         }
@@ -228,6 +239,12 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
 
     return () => {
       cancelled = true;
+
+      // A cancelled pending request never applies its queue, so let the next run
+      // for this key ask again (React Strict Mode replays mount effects in dev).
+      if (!settled) {
+        requestedSessionKeyRef.current = "";
+      }
     };
   }, [isLoaded, selectedPersonId, zone]);
 
@@ -617,7 +634,7 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
   return (
     <>
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
-        <section className="mimi-panel p-4 sm:p-6">
+        <section className="min-w-0">
           <div className="mb-5">
             <LearningZoneTabs
               zone={zone}
@@ -702,21 +719,20 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
             onPointerCancel={() => {
               cardPointerStartRef.current = null;
             }}
-            className={`grid min-h-[22rem] place-items-center rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-4 text-center sm:p-8 ${
+            className={`grid min-h-[22rem] place-items-center text-center ${
               currentItem ? "cursor-pointer" : ""
             }`}
           >
             {currentItem ? (
-              <div className="grid w-full max-w-2xl gap-5">
+              <div className="relative grid w-full max-w-2xl gap-5">
+                <AnimatePresence mode="popLayout">
                 <motion.div
                   key={currentItem.id}
-                  initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: reduceMotion ? 0.12 : 0.34,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className="mimi-card bg-[var(--mimi-surface)] p-5 sm:p-8"
+                  initial={reduceMotion ? { opacity: 0 } : mistCardFrom}
+                  animate={reduceMotion ? { opacity: 1 } : mistCardTo}
+                  exit={reduceMotion ? { opacity: 0, transition: reducedFade } : mistExit}
+                  transition={reduceMotion ? reducedFade : mistCardIn}
+                  className="mimi-card mimi-card-hero w-full p-6 sm:p-9"
                 >
                   <div className="flex items-start justify-center gap-3">
                     <p className="mimi-word-serif min-w-0 break-words text-4xl text-[var(--mimi-text)] sm:text-6xl">
@@ -728,7 +744,7 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
                       disabled={isListening}
                       aria-busy={isListening}
                       aria-label={`Listen to ${currentItem.surfaceText}`}
-                      className="mimi-button-secondary mimi-focus-ring grid size-11 shrink-0 place-items-center"
+                      className="mimi-icon-button mimi-focus-ring grid size-11 shrink-0 place-items-center"
                     >
                       <Volume2 aria-hidden="true" className="size-4" />
                     </PressableButton>
@@ -737,21 +753,19 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
                     {showBack ? "Tap again to hide." : "Tap anywhere here to reveal."}
                   </p>
 
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence>
                     {showBack ? (
                       <motion.div
                         key="answer"
-                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
-                        transition={{
-                          duration: reduceMotion ? 0.12 : 0.26,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        className="mt-6 grid gap-3 border-t border-[var(--mimi-border)] pt-5 text-left"
+                        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, filter: "blur(6px)" }}
+                        animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto", filter: "blur(0px)", transitionEnd: { filter: "none" } }}
+                        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, filter: "blur(6px)" }}
+                        transition={reduceMotion ? reducedFade : answerUnfold}
+                        className="overflow-hidden"
                       >
+                      <div className="mt-6 grid gap-3 border-t border-[var(--mimi-border)] pt-5 text-left">
                         <div>
-                          <p className="text-xs font-semibold uppercase text-[var(--mimi-text-muted)]">Meaning</p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--mimi-text-muted)]">Meaning</p>
                           {currentMeanings.length ? (
                             <div className="mt-1 grid gap-1 text-lg font-semibold text-[var(--mimi-text)]">
                               {currentMeanings.map((meaning, index) => (
@@ -764,7 +778,7 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
                         </div>
                         {currentExamplePairs.length ? (
                           <div>
-                            <p className="text-xs font-semibold uppercase text-[var(--mimi-text-muted)]">Example</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--mimi-text-muted)]">Example</p>
                             <div className="mt-1 grid gap-1 text-sm leading-6 text-[var(--mimi-text-soft)]">
                               {currentExamplePairs.map((pair, index) => (
                                 <div key={`${currentItem.id}-example-${index}`} className="grid gap-0.5">
@@ -798,17 +812,19 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
                         ) : null}
                         {currentItem.notes ? (
                           <div>
-                            <p className="text-xs font-semibold uppercase text-[var(--mimi-text-muted)]">Memory hint</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--mimi-text-muted)]">Memory hint</p>
                             <p className="mt-1 text-sm leading-6 text-[var(--mimi-text-soft)]">{currentItem.notes}</p>
                           </div>
                         ) : null}
+                      </div>
                       </motion.div>
                     ) : null}
                   </AnimatePresence>
                 </motion.div>
+                </AnimatePresence>
               </div>
             ) : (
-              <div className="mimi-card grid max-w-md place-items-center gap-3 bg-[var(--mimi-surface)] p-7 text-center">
+              <div className="mimi-card mimi-card-hero grid max-w-md place-items-center gap-3 p-7 text-center">
                 <CheckCircle2 aria-hidden="true" className="size-10 text-[var(--mimi-primary)]" />
                 <p className="text-lg font-semibold text-[var(--mimi-text)]">
                   {isSessionLoading || sessionIds === null
@@ -874,10 +890,10 @@ export function ReviewSession({ zone }: ReviewSessionProps) {
                       }
                     }}
                     onClick={(event) => void submitRating(rating.value, event.timeStamp)}
-                    className={`mimi-rating-button mimi-rating-${rating.value} mimi-focus-ring min-h-14 rounded-md border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50`}
+                    className={`mimi-rating-button mimi-rating-${rating.value} mimi-focus-ring min-h-14 border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50`}
                   >
                     <span className="block">{rating.label}</span>
-                    <span className="mt-1 block text-xs font-medium text-[var(--mimi-text-soft)]">{rating.interval}</span>
+                    <span className="mimi-rating-sub mt-1 block text-xs font-medium">{rating.interval}</span>
                   </PressableButton>
                 ))}
               </div>

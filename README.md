@@ -14,9 +14,34 @@ Mimi Vocabulary combines two kinds of learning: recognizing a word when reading,
 - **A practical vocabulary library.** English–Chinese example pairs, editable imports, duplicate detection, search, archive, and explicit confirmations for deletion.
 - **Recovery-aware persistence.** Browser storage for the demo, a repository boundary for PostgreSQL, versioned backups, and tests for uncertain remote save outcomes.
 - **AI integration with limits.** Editable draft generation, provider adapters, caching, accounting, concurrency limits, and kill switches. Local fixture responses demonstrate parts of the flow without a paid AI request.
-- **A maintained visual system.** Deep sage and warm ivory, a cat illustration, light/dark themes, responsive navigation, and quiet interaction feedback.
+- **A maintained visual system.** Gentle Organic jelly controls, warm paper reading surfaces, a cat illustration, light/dark themes, responsive navigation, and quiet interaction feedback.
 
 The interesting engineering is in the boundaries between these features. Changing a learner is not authentication. A timeout does not prove a save failed. A generated draft does not become study data until the user accepts it. The [case study](docs/CASE_STUDY.md) follows those decisions into the source and tests.
+
+## Interface
+
+Gentle Organic combines a warm paper canvas, readable solid cards, lavender jelly buttons, and frosted navigation. These captures use only the bundled synthetic vocabulary in local mode; they are examples of the interface, not real learning records.
+
+![Home in the light theme with synthetic vocabulary](docs/screenshots/home-light.jpg)
+
+<details>
+<summary>Study, dark mode, and mobile screenshots</summary>
+
+### Focused study
+
+![Recognition study with a synthetic bilingual example and four rating choices](docs/screenshots/study-light.jpg)
+
+### Dark theme
+
+![Synthetic vocabulary library in the dark theme](docs/screenshots/library-dark.jpg)
+
+### Mobile layout
+
+<img src="docs/screenshots/study-mobile.jpg" alt="Recognition study in a 390-pixel mobile browser viewport" width="320" />
+
+</details>
+
+See the [design baseline](docs/DESIGN.md) and [verification record](docs/VALIDATION.md) for the captured states and limits.
 
 ## Run locally
 

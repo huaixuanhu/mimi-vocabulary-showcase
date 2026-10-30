@@ -67,7 +67,7 @@ export function SoundSettingsForm() {
           return (
             <div
               key={row.key}
-              className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] p-3 sm:p-4"
+              className="rounded-[22px] border border-[var(--mimi-border)] bg-[var(--mimi-surface-strong)] p-3 sm:p-4"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -76,7 +76,7 @@ export function SoundSettingsForm() {
 
                 <div className="flex shrink-0 items-center gap-2">
                   <div
-                    className="grid grid-cols-2 rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface)] p-1"
+                    className="mimi-glass-tray grid grid-cols-2 rounded-full p-1"
                     aria-label={row.title}
                   >
                     {[true, false].map((option) => {
@@ -88,9 +88,9 @@ export function SoundSettingsForm() {
                           type="button"
                           aria-pressed={active}
                           onClick={() => setEnabled(row.key, option)}
-                          className={`mimi-focus-ring min-h-11 min-w-14 rounded-[6px] px-3 text-xs font-semibold transition duration-200 ease-[var(--mimi-ease)] ${
+                          className={`mimi-focus-ring min-h-11 min-w-14 rounded-full px-3 text-xs font-semibold ${
                             active
-                              ? "bg-[var(--mimi-primary)] text-[var(--mimi-surface-strong)] shadow-[0_10px_20px_rgb(31_47_38/0.16)]"
+                              ? "mimi-gel-thumb text-[var(--mimi-on-thumb)]"
                               : "text-[var(--mimi-text-soft)] hover:bg-[var(--mimi-primary-soft)] hover:text-[var(--mimi-primary-deep)]"
                           }`}
                         >
@@ -106,7 +106,7 @@ export function SoundSettingsForm() {
                     aria-label={row.previewLabel}
                     title={row.previewLabel}
                     onClick={() => void previewSound(row.key)}
-                    className="mimi-button-secondary mimi-focus-ring inline-grid size-11 place-items-center p-0"
+                    className="mimi-icon-button mimi-focus-ring inline-grid size-11 place-items-center p-0"
                   >
                     <Icon aria-hidden="true" className="size-4" />
                   </PressableButton>

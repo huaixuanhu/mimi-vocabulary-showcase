@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-10-31 — 5. Gentle Organic and synthetic screenshots
+
+Source: the owner requested synchronization with the accepted Gentle Organic UI and README screenshots while retaining synthetic data and local demonstration. Adopt showcase design `2.0.0-organic-jelly`, preserving typography, four rating colors, learning operations, isolated storage names, and device speech by default. The request replaces the earlier screenshot deferral. Only reviewed public source and synthetic captures are published; no hosted app or service connection is introduced.
+
 ## 2026-10-19 — 1. Independent portfolio export
 
 Source: the owner's explicit showcase request. Create a new public repository with fresh history while retaining the original operational repository privately. Publish selected application source and synthetic fixtures, with a local browser-storage default and separate storage namespace. Exclude private history, operational evidence, original data, credentials, and cloud operation launchers. This keeps the code reviewable without making private records part of the portfolio.

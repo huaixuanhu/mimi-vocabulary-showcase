@@ -22,7 +22,7 @@ export function DailyTrackCard({
   const Icon = recognition ? BookOpen : AudioWaveform;
 
   return (
-    <section className="mimi-card grid gap-4 p-4 sm:p-5">
+    <section className="mimi-card grid gap-4 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-normal text-[var(--mimi-text-muted)]">
@@ -32,21 +32,21 @@ export function DailyTrackCard({
             {recognition ? "Recognition Vocabulary" : "Active Vocabulary"}
           </h2>
         </div>
-        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--mimi-primary-soft)] text-[var(--mimi-primary-deep)]">
+        <span className="mimi-gel-chip mimi-tone-mint inline-flex size-10 shrink-0 items-center justify-center rounded-full">
           <Icon aria-hidden="true" className="size-5" />
         </span>
       </div>
 
       {track.status === "available" ? (
         <>
-          <div className="grid grid-cols-2 gap-2" aria-label="Today’s actual progress">
-            <div className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] px-3 py-2.5">
+          <div className="grid grid-cols-2" aria-label="Today’s actual progress">
+            <div className="pr-3">
               <p className="text-xs leading-4 text-[var(--mimi-text-soft)]">Reviewed today</p>
-              <p className="mt-1 text-xl font-semibold text-[var(--mimi-text)]">{track.metrics.reviewedToday}</p>
+              <p className="mt-1 text-3xl font-semibold leading-none text-[var(--mimi-text)]">{track.metrics.reviewedToday}</p>
             </div>
-            <div className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] px-3 py-2.5">
+            <div className="border-l border-[var(--mimi-border)] pl-4">
               <p className="text-xs leading-4 text-[var(--mimi-text-soft)]">Learned today</p>
-              <p className="mt-1 text-xl font-semibold text-[var(--mimi-text)]">{track.metrics.learnedToday}</p>
+              <p className="mt-1 text-3xl font-semibold leading-none text-[var(--mimi-text)]">{track.metrics.learnedToday}</p>
             </div>
           </div>
 
@@ -54,7 +54,7 @@ export function DailyTrackCard({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/review?zone=review"
-                className="mimi-button mimi-focus-ring inline-flex min-h-11 items-center justify-center gap-2 px-3 text-sm font-semibold"
+                className="mimi-button-secondary mimi-focus-ring inline-flex min-h-11 items-center justify-center gap-2 px-3 text-sm font-semibold"
               >
                 Review
                 <ArrowRight aria-hidden="true" className="size-4" />
@@ -71,7 +71,7 @@ export function DailyTrackCard({
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/practice-lab?zone=review"
-                className="mimi-button mimi-focus-ring inline-flex min-h-11 items-center justify-center gap-2 px-3 text-sm font-semibold"
+                className="mimi-button-secondary mimi-focus-ring inline-flex min-h-11 items-center justify-center gap-2 px-3 text-sm font-semibold"
               >
                 Review
                 <ArrowRight aria-hidden="true" className="size-4" />

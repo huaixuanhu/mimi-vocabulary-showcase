@@ -52,7 +52,7 @@ export function PersonSettingsForm() {
   return (
     <div className="grid gap-4 md:max-w-md">
       <label className="grid gap-2">
-        <span className="text-sm font-semibold text-[#203229]">Current person</span>
+        <span className="text-sm font-semibold text-[var(--mimi-text)]">Current person</span>
         <select
           value={selectedPerson.id}
           disabled={!isLoaded}
@@ -69,7 +69,7 @@ export function PersonSettingsForm() {
 
       <form className="grid gap-2" onSubmit={handleAddPerson}>
         <label className="grid gap-2">
-          <span className="text-sm font-semibold text-[#203229]">Add person</span>
+          <span className="text-sm font-semibold text-[var(--mimi-text)]">Add person</span>
           <input
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
@@ -87,15 +87,15 @@ export function PersonSettingsForm() {
         </PressableButton>
       </form>
 
-      <div className="rounded-md border border-[#d8d1c2] bg-[#efe9dc] p-3 text-sm text-[#5f6d62]">
-        <p className="inline-flex items-center gap-2 font-semibold text-[#203229]">
+      <div className="rounded-md border border-[var(--mimi-border)] bg-[var(--mimi-surface-muted)] p-3 text-sm text-[var(--mimi-text-soft)]">
+        <p className="inline-flex items-center gap-2 font-semibold text-[var(--mimi-text)]">
           <Users aria-hidden="true" className="size-4" />
           {activePeople.length} {activePeople.length === 1 ? "person" : "people"}
         </p>
         <p className="mt-1">只切换学习数据，不是账号或密码隔离。</p>
       </div>
 
-      {message ? <p className="rounded-md bg-[#d9e5d5] px-3 py-2 text-sm text-[#274331]">{message}</p> : null}
+      {message ? <p className="rounded-md bg-[var(--mimi-primary-soft)] px-3 py-2 text-sm text-[var(--mimi-primary-deep)]">{message}</p> : null}
     </div>
   );
 }

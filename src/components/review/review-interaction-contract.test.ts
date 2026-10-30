@@ -90,15 +90,16 @@ describe("V2 Stage 3.1 review interaction UI contract", () => {
     expect(reviewSource).toContain('data-selected={');
   });
 
-  it("reuses the accepted rating hover appearance without new movement", () => {
+  it("floats the rating stone on hover or as the Enter target without a dark outline", () => {
     const ratingFeedback = globalCss.slice(
       globalCss.indexOf(".mimi-rating-button:not(:disabled):hover"),
       globalCss.indexOf(".mimi-rating-forgot"),
     );
 
     expect(ratingFeedback).toContain('[data-selected="true"]');
+    expect(ratingFeedback).toContain("translate: 0 -2px");
     expect(ratingFeedback).toContain("filter: brightness");
     expect(ratingFeedback).toContain("box-shadow:");
-    expect(ratingFeedback).not.toContain("transform");
+    expect(ratingFeedback).not.toContain("0 0 0 4px");
   });
 });

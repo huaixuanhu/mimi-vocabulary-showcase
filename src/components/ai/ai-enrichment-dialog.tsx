@@ -364,7 +364,7 @@ export function AiEnrichmentDialog({
           type="button"
           onClick={closeDialog}
           aria-label="Close AI suggestions"
-          className="mimi-button-secondary mimi-focus-ring grid size-11 shrink-0 place-items-center"
+          className="mimi-icon-button mimi-focus-ring grid size-11 shrink-0 place-items-center"
         >
           <X aria-hidden="true" className="size-4" />
         </button>
@@ -534,7 +534,7 @@ export function AiEnrichmentDialog({
                       setDraft({ ...draft, similarWords: draft.similarWords.filter((_, candidateIndex) => candidateIndex !== index) });
                       setSimilarKeys(similarKeys.filter((_, candidateIndex) => candidateIndex !== index));
                     }}
-                    className="mimi-button-secondary mimi-focus-ring grid size-11 place-items-center"
+                    className="mimi-icon-button mimi-focus-ring grid size-11 place-items-center"
                   >
                     <Trash2 aria-hidden="true" className="size-4" />
                   </button>
@@ -634,7 +634,7 @@ export function AiEnrichmentDialog({
                           ),
                         );
                       }}
-                      className="mimi-button-secondary mimi-focus-ring grid size-11 place-items-center"
+                      className="mimi-icon-button mimi-focus-ring grid size-11 place-items-center"
                     >
                       <Trash2 aria-hidden="true" className="size-4" />
                     </button>

@@ -6,7 +6,7 @@ Mimi Vocabulary explores those problems through a focused bilingual learning pro
 
 ## Human direction shaped the product
 
-The two learning tracks reflect different tasks: recognizing a word while reading and actively producing it. They keep independent schedules and histories so success in one task does not silently count as success in the other. The UI follows that separation through daily goals, study prompts, and review feedback. The accepted visual language uses subdued sage, warm cards, and a cat illustration to support daily study without competitive rewards or pressure copy.
+The two learning tracks reflect different tasks: recognizing a word while reading and actively producing it. They keep independent schedules and histories so success in one task does not silently count as success in the other. The UI follows that separation through daily goals, study prompts, and review feedback. The accepted visual language uses warm paper reading surfaces, lavender jelly controls, frosted navigation, and a cat illustration to support daily study without competitive rewards or pressure copy.
 
 The owner also chose explicit review before imports, generated content, and destructive actions. Agents implemented those choices within bounded plans; they did not independently decide to publish learner data, spend without limits, or deploy a new service.
 

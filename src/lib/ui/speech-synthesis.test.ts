@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_SPEECH_SOURCE_PREFERENCE,
+  cancelEnglishSpeech,
   DEFAULT_SPEECH_VOICE_PREFERENCE,
   listEnglishSpeechVoices,
   parseSpeechVoicePreference,
@@ -11,6 +12,11 @@ import {
   type SpeechUtteranceAdapter,
   type SpeechVoiceAdapter,
 } from "./speech-synthesis";
+
+afterEach(() => {
+  cancelEnglishSpeech();
+  vi.unstubAllGlobals();
+});
 
 const voices: SpeechVoiceAdapter[] = [
   {
@@ -219,6 +225,88 @@ describe("browser English speech", () => {
       source: "cloud",
       message: "Autoplay was blocked · Tap the sound button",
     });
+  });
+
+  it("lets only the current owner stop Cloud audio after a playback handoff", async () => {
+    const oldOwner = Symbol("old card");
+    const nextOwner = Symbol("next card");
+    const audio: { pause: ReturnType<typeof vi.fn> }[] = [];
+    vi.stubGlobal("Audio", class {
+      pause = vi.fn();
+      constructor() { audio.push(this); }
+      play = async () => {};
+      addEventListener() {}
+    });
+    const cloud = {
+      sourcePreference: "cloud" as const,
+      createRequestId: () => "00000000-0000-4000-8000-000000000004",
+      fetchImpl: vi.fn(async () => new Response(new Uint8Array([1, 2, 3]), {
+        headers: { "content-type": "audio/mpeg" },
+      })),
+    };
+
+    await speakEnglishText("first owner word", "example-word", { ...cloud, playbackOwner: oldOwner });
+    await speakEnglishText("second owner word", "recognition", { ...cloud, playbackOwner: nextOwner });
+    expect(audio[0].pause).toHaveBeenCalledOnce();
+    expect(audio[1].pause).not.toHaveBeenCalled();
+
+    cancelEnglishSpeech(oldOwner);
+    expect(audio[1].pause).not.toHaveBeenCalled();
+    cancelEnglishSpeech(nextOwner);
+    expect(audio[1].pause).toHaveBeenCalledOnce();
+  });
+
+  it("ignores a stale owner's cleanup and late response while the next Cloud request is pending", async () => {
+    const oldOwner = Symbol("old card");
+    const nextOwner = Symbol("next card");
+    const requests: { signal: AbortSignal; resolve: (response: Response) => void }[] = [];
+    const playAudioBlob = vi.fn(async () => {});
+    const cloud = {
+      sourcePreference: "cloud" as const,
+      createRequestId: () => "00000000-0000-4000-8000-000000000005",
+      playAudioBlob,
+      // Deliberately ignore abort to verify a late response cannot play.
+      fetchImpl: vi.fn((_url: string | URL | Request, init?: RequestInit) =>
+        new Promise<Response>((resolve) => requests.push({ signal: init!.signal!, resolve }))),
+    };
+    const oldRequest = speakEnglishText("stale pending word", "example-word", { ...cloud, playbackOwner: oldOwner });
+    const nextRequest = speakEnglishText("current pending word", "recognition", { ...cloud, playbackOwner: nextOwner });
+    expect(requests[0].signal.aborted).toBe(true);
+    cancelEnglishSpeech(oldOwner);
+    expect(requests[1].signal.aborted).toBe(false);
+
+    const response = () => new Response(new Uint8Array([1, 2, 3]), {
+      headers: { "content-type": "audio/mpeg" },
+    });
+    requests[0].resolve(response());
+    expect(await oldRequest).toMatchObject({ status: "cancelled" });
+    expect(playAudioBlob).not.toHaveBeenCalled();
+    requests[1].resolve(response());
+    expect(await nextRequest).toMatchObject({ status: "spoken" });
+    expect(playAudioBlob).toHaveBeenCalledOnce();
+  });
+
+  it("scopes device cancellation while keeping explicit source-change cancellation global", async () => {
+    const oldOwner = Symbol("old card");
+    const nextOwner = Symbol("next card");
+    const cancel = vi.fn();
+    const synthesis = { cancel, speak: vi.fn(), getVoices: () => voices };
+    vi.stubGlobal("window", { speechSynthesis: synthesis });
+    const device = {
+      sourcePreference: "device" as const,
+      synthesis,
+      createUtterance: (text: string) => ({ text, lang: "", rate: 1, pitch: 0, voice: null }),
+    };
+    await speakEnglishText("earlier device word", "example-word", { ...device, playbackOwner: oldOwner });
+    await speakEnglishText("next device word", "recognition", { ...device, playbackOwner: nextOwner });
+    cancel.mockClear();
+
+    cancelEnglishSpeech(oldOwner);
+    expect(cancel).not.toHaveBeenCalled();
+    cancelEnglishSpeech(nextOwner);
+    expect(cancel).toHaveBeenCalledOnce();
+    cancelEnglishSpeech();
+    expect(cancel).toHaveBeenCalledTimes(2);
   });
 
   it("lists only English voices and gives natural-labelled voices first", () => {

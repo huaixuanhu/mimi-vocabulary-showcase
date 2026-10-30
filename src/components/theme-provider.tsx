@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 export type MimiTheme = "dark" | "light";
 
 const THEME_STORAGE_KEY = "mimi-showcase-ui-theme-v1";
-const DEFAULT_THEME: MimiTheme = "dark";
+const DEFAULT_THEME: MimiTheme = "light";
 
 type ThemeContextValue = {
   theme: MimiTheme;

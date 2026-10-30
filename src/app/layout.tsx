@@ -9,9 +9,9 @@ const themeInitScript = `
 (() => {
   try {
     const theme = window.localStorage.getItem("mimi-showcase-ui-theme-v1");
-    document.documentElement.dataset.mimiTheme = theme === "light" ? "light" : "dark";
+    document.documentElement.dataset.mimiTheme = theme === "dark" ? "dark" : "light";
   } catch {
-    document.documentElement.dataset.mimiTheme = "dark";
+    document.documentElement.dataset.mimiTheme = "light";
   }
 })();
 `;
