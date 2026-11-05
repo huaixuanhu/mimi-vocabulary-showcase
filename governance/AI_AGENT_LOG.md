@@ -1,5 +1,15 @@
 # Agent work log
 
+## 2026-11-05 — Mist-garden showcase refresh
+
+Executor: Codex (GPT-6), one writing agent with source self-review; no independent-host verification.
+
+The owner requested checking the showcase and updating it to the latest accepted interface. Compared the clean public baseline with the accepted palette and synchronized two runtime files: shared CSS and decorative shell fields. Preserved every other runtime/configuration file, the synthetic sample, dependency lockfile, local storage names, device-speech default, and all 82 rating-color declarations. The light rating-focus outline is part of the accepted color adjustment; materials, fonts, layout, motion, and learning operations remain unchanged.
+
+A fresh credential-free installation passed the aggregate check: governance, lint, type checking, 792 tests with one gated database test skipped, three synthetic fixture planners, and the default build. The browser used only the 12 bundled synthetic entries. Twelve responsive measurements had no horizontal overflow; answer disclosure and all four keyboard focus outlines were inspected. Settings retained device voice, the local health endpoint reported local mode with remote storage disabled, and the sampled warning/error console was empty. Four reviewed native JPEG captures replace the previous README images. This refresh did not submit a study rating or exercise a paid provider, real database, hosted application, or physical phone.
+
+Design revision `2.1.0-mist-jelly` is recorded in `docs/DESIGN.md`; exact evidence and limits belong to `docs/VALIDATION.md`. Publication review covers the 324-file curated inventory, targeted private-identifier checks, and screenshot contents/metadata. Gitleaks 8.30.1 reports only the unchanged test-only signing fixture; no confirmed credential was identified. The approved destination is the existing public main branch, with private history and operating evidence excluded.
+
 ## 2026-10-31 — Gentle Organic synchronization and screenshots
 
 Executor: Codex (GPT-6), one writing agent with source self-review; no independent-host verification.

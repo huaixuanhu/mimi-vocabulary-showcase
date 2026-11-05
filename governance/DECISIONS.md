@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-11-05 — 6. Mist-garden colors with existing materials
+
+Source: the owner requested checking this existing public showcase and bringing it up to date with the accepted interface. Adopt `2.1.0-mist-jelly`: sage/teal light and dark colors, irregular static light-theme color fields, and the corresponding rating-focus outline. Retain the current materials, typography, rating fills, layout, motion, learning behavior, and local-demo boundaries. Refresh the four existing README screenshots with bundled synthetic content and publish only the reviewed source update to the existing public main branch. No hosted app or service activation is included.
+
 ## 2026-10-31 — 5. Gentle Organic and synthetic screenshots
 
 Source: the owner requested synchronization with the accepted Gentle Organic UI and README screenshots while retaining synthetic data and local demonstration. Adopt showcase design `2.0.0-organic-jelly`, preserving typography, four rating colors, learning operations, isolated storage names, and device speech by default. The request replaces the earlier screenshot deferral. Only reviewed public source and synthetic captures are published; no hosted app or service connection is introduced.

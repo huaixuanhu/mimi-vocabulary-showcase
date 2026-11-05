@@ -11,7 +11,27 @@ npm run check
 
 `check` runs the governance structure check, lint, type checking, the retained test suite, three synthetic backup-plan checks, and the application build. The backup commands only plan fixture imports; they do not connect to a database or apply SQL.
 
-## Current evidence — 2026-10-31
+## Current evidence — 2026-11-05
+
+Observed in a fresh, credential-free macOS copy using the unchanged lockfile, Node.js 25.3.0, npm 11.7.0, and Next.js 16.3.8:
+
+| Check | Observed result |
+| --- | --- |
+| Fresh installation | `npm ci --ignore-scripts --no-audit --no-fund` completed. Dependencies and the lockfile are unchanged. Existing npm deprecation notices remain. |
+| Aggregate `npm run check` | Passed governance structure, ESLint, TypeScript, 792 tests (1 gated database test skipped), all three fixture planners, and the default Turbopack build. The existing Vitest configuration-loading warning did not prevent the run. |
+| Change boundary | Only `src/app/globals.css` and `src/components/app-shell.tsx` changed at runtime. All other runtime files, configuration, synthetic fixtures, fonts, and dependency files match the preceding showcase. All 82 rating-color declarations are unchanged; light-theme focus color is the explicit exception described in DESIGN.md. |
+| Local operation | The local storage health endpoint returned `ok: true`, `status: disabled`, and runtime mode `local`. A fresh Settings page selected device voice. Application AI and cloud speech remained disabled. |
+| Synthetic rendering | Imported the 12 bundled entries, observed six words in each track, set both new-learning goals to 2, and revealed a Recognition answer. No rating was submitted in this refresh; the screenshots show zero completed reviews. |
+| Responsive checks | Twelve measurements cover light Home, revealed light Recognition study, and dark Library at browser widths 320, 390, 768, and 1280 pixels. No horizontal overflow was observed. The four static fields render in light mode and are hidden in dark mode. |
+| Keyboard and feedback | Ratings were disabled before reveal and enabled afterward. Tab reached all four rating controls, each with a visible 2-pixel outline. Mobile More opened and Escape returned focus to More. The sampled warning/error console was empty. |
+| Publication review | 324 curated files checked with Gitleaks 8.30.1 and targeted private-identifier review. The only scanner match is the unchanged test-only signing fixture in `src/lib/daily-study/opaque-token.test.ts`; no confirmed credential was identified. The four refreshed JPEGs contain no EXIF or comment segments and received visual review. |
+| README images | Refreshed light Home, light Recognition study, dark Library, and mobile study with actual local captures using only the bundled synthetic vocabulary. Home and desktop study are full-page captures; Library and mobile are viewport captures. |
+
+Capture sizes are Home 1265×1288, desktop study 1265×959, dark Library 1265×889, and mobile study 375×812. Desktop captures used a 1280×900 browser viewport; mobile used 390×844. Scrollbars and capture handling account for the pixel differences. The mobile capture shows the study heading, word, bilingual answer, and persistent navigation; the desktop study capture also shows all four rating controls. Images are unedited browser captures, saved with their native JPEG format.
+
+The scanner archive matches the previously verified official Gitleaks 8.30.1 checksum. The publication inventory excludes dependency directories, generated builds, private operating records, and local validation artifacts. This update does not add a dependency audit, physical-phone check, new operating-system reduced-motion test, live provider request, database check, or hosted deployment. The dated advisory record below and unchanged functional evidence remain bounded to their original runs.
+
+## Historical evidence — 2026-10-31
 
 Observed in a fresh, credential-free macOS copy using the unchanged lockfile, Node.js 25.3.0, npm 11.7.0, and Next.js 16.3.8:
 

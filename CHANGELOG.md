@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-05 — Mist-garden palette refresh
+
+- Updated light and dark colors to the accepted sage/teal palette, with four irregular static green, mist-blue, and peach fields in light mode.
+- Retained the existing jelly materials, solid reading cards, frosted navigation, fonts, layout, motion, and four rating colors. Light-theme rating focus uses a stronger outline.
+- Replaced all four README captures with the latest synthetic local views and updated the design baseline to `2.1.0-mist-jelly`.
+- The showcase's own aggregate check passed with 792 tests and one gated database test skipped. Rendering and publication evidence belong to `docs/VALIDATION.md`; local storage, device speech, and disabled cloud services remain unchanged.
+
 ## 2026-10-31 — Gentle Organic showcase update
 
 - Synchronized warm paper reading surfaces, lavender jelly controls, frosted navigation, calmer light mode, dark mode, and responsive dialogs.

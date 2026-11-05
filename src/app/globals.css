@@ -9,48 +9,48 @@
 }
 
 /* Gentle Organic revision 2 · upstream 92cf20f04bd87eaaab1a2f491f1959e63ca11644.
-   Warm paper/lavender environment, opaque reading surfaces, jelly controls and frosted floating tools.
+   Mist-garden colour adaptation, opaque reading surfaces, jelly controls and frosted floating tools.
    Mimi keeps its fonts and rating palette. CSS material level 0; default fog, no new runtime script. */
 :root {
-  --background: #f0ebe5;
-  --foreground: #3a3040;
-  --mimi-bg: #f0ebe5;
-  --mimi-canvas-glow: #f1ebf1;
-  --mimi-bg-deep: #e8e1db;
-  --mimi-bg-soft: #e8e1db;
-  --mimi-bg-panel: #ece4f2;
-  --mimi-surface: #f8f5f0;
-  --mimi-surface-strong: #f8f5f0;
-  --mimi-surface-muted: #e8e1db;
-  --mimi-primary: #6c5a82;
-  --mimi-primary-dark: #6c5a82;
-  --mimi-primary-deep: #3f2f50;
-  --mimi-primary-soft: #ece4f2;
-  --mimi-on-thumb: #3f2f50;
-  --mimi-state-primary: #8d79a3;
-  --mimi-on-primary: #2f2539;
+  --background: #e6ede9;
+  --foreground: #1f322e;
+  --mimi-bg: #e6ede9;
+  --mimi-canvas-glow: #e3eee6;
+  --mimi-bg-deep: #dbe5df;
+  --mimi-bg-soft: #dbe5df;
+  --mimi-bg-panel: #d7e5dd;
+  --mimi-surface: #edf0e8;
+  --mimi-surface-strong: #edf0e8;
+  --mimi-surface-muted: #dbe5df;
+  --mimi-primary: #29574e;
+  --mimi-primary-dark: #29574e;
+  --mimi-primary-deep: #1f433c;
+  --mimi-primary-soft: #d7e5dd;
+  --mimi-on-thumb: #1f433c;
+  --mimi-state-primary: #4f796f;
+  --mimi-on-primary: #0e2420;
   --mimi-on-state-primary: #ffffff;
-  --mimi-gel-top: #e6dbee;
-  --mimi-gel-mid: #cebddb;
-  --mimi-gel-bottom: #b49ccc;
-  --mimi-gel-blush: #f2cee0;
-  --mimi-gel-glow: rgba(146,110,178,0.4);
+  --mimi-gel-top: #cfe8de;
+  --mimi-gel-mid: #a9dccf;
+  --mimi-gel-bottom: #79b5a9;
+  --mimi-gel-blush: #f3d3c0;
+  --mimi-gel-glow: rgba(91,150,132,0.4);
   --mimi-gel-rim: rgba(255,255,255,0.68);
   --mimi-gel-edge: rgba(255,255,255,0.3);
-  --mimi-gel-depth: rgba(84,58,104,0.22);
-  --mimi-glass-fill: rgba(248,245,240,0.62);
+  --mimi-gel-depth: rgba(49,78,68,0.22);
+  --mimi-glass-fill: rgba(237,240,232,0.62);
   --mimi-glass-edge: rgba(255,255,255,0.3);
   --mimi-glass-shine: rgba(255,255,255,0.64);
   --mimi-glass-gloss: rgba(255,255,255,0.34);
-  --mimi-glass-depth: rgba(84,58,104,0.22);
+  --mimi-glass-depth: rgba(49,78,68,0.22);
   --mimi-secondary: #e9ddd3;
   --mimi-secondary-deep: #d6c4b6;
-  --mimi-on-secondary: #3d3135;
-  --mimi-mint-gel: #ece4f2;
-  --mimi-mint-ink: #3f2f50;
+  --mimi-on-secondary: #493b34;
+  --mimi-mint-gel: #d7e5dd;
+  --mimi-mint-ink: #1f433c;
   --mimi-peach-gel: #e9ddd3;
-  --mimi-peach-ink: #3d3135;
-  --mimi-accent: #e8b4c1;
+  --mimi-peach-ink: #493b34;
+  --mimi-accent: #dfbea8;
   --mimi-amber: #f7e8c6;
   --mimi-amber-line: #85570f;
   --mimi-amber-soft: #f7e8c6;
@@ -60,35 +60,35 @@
   --mimi-danger-soft: #f9dfda;
   --mimi-danger-line: #a63b31;
   --mimi-danger-ink: #a63b31;
-  --mimi-border: #d8cfd6;
-  --mimi-border-strong: #8b7f8d;
-  --mimi-text: #3a3040;
-  --mimi-text-soft: #5d5362;
-  --mimi-text-muted: #5d5362;
-  --mimi-focus: #6c5a82;
-  --mimi-focus-halo: rgba(141,121,163,0.24);
-  --mimi-backdrop: rgba(58,48,64,0.32);
-  --mimi-rail-text: #3a3040;
-  --mimi-rail-strong: #3a3040;
-  --mimi-rail-soft: #5d5362;
-  --mimi-nav-hover-bg: #ece4f2;
-  --mimi-page-heading: #3a3040;
-  --mimi-page-kicker: #5d5362;
-  --mimi-page-copy: #5d5362;
-  --mimi-panel-dark-start: #f8f5f0;
-  --mimi-panel-dark-end: #f8f5f0;
-  --mimi-panel-dark-text: #3a3040;
-  --mimi-panel-dark-muted: #5d5362;
-  --mimi-panel-dark-item-bg: #e8e1db;
-  --mimi-panel-dark-item-border: #d8cfd6;
-  --mimi-brand-hover-bg: #ece4f2;
-  --mimi-shadow-jelly: 5px 9px 9px -7px rgba(255,241,249,0.6), 0 1px 2px rgba(74,52,88,0.18), 3px 10px 18px -9px rgba(150,112,182,0.3), 6px 22px 34px -18px rgba(232,170,196,0.22);
-  --mimi-shadow-jelly-press: 3px 5px 6px -5px rgba(255,241,249,0.56), 0 1px 1.5px rgba(74,52,88,0.2), 2px 4px 9px -4px rgba(150,112,182,0.28);
-  --mimi-shadow-soft: 0 1px 2px rgba(74,52,88,0.08), 0 3px 8px -2px rgba(74,52,88,0.08), 0 10px 20px -8px rgba(74,52,88,0.14);
-  --mimi-shadow-lift: 0 2px 4px rgba(74,52,88,0.08), 0 8px 16px -6px rgba(74,52,88,0.14), 0 18px 32px -14px rgba(74,52,88,0.22);
-  --mimi-shadow-dialog: 0 -2px 10px rgba(74,52,88,0.06), 0 -20px 48px -20px rgba(74,52,88,0.26);
-  --mimi-glass-shadow: 0 2px 6px rgba(74,52,88,0.06), 0 12px 28px -10px rgba(74,52,88,0.16), 0 28px 56px -24px rgba(74,52,88,0.26);
-  --mimi-shadow-well: inset 0 1px 2px rgba(74,52,88,0.1), inset 0 3px 6px -2px rgba(74,52,88,0.08);
+  --mimi-border: #c9d7ce;
+  --mimi-border-strong: #7b8e85;
+  --mimi-text: #1f322e;
+  --mimi-text-soft: #42575a;
+  --mimi-text-muted: #42575a;
+  --mimi-focus: #29574e;
+  --mimi-focus-halo: rgba(79,121,111,0.24);
+  --mimi-backdrop: rgba(31,50,46,0.32);
+  --mimi-rail-text: #1f322e;
+  --mimi-rail-strong: #1f322e;
+  --mimi-rail-soft: #42575a;
+  --mimi-nav-hover-bg: #d7e5dd;
+  --mimi-page-heading: #1f322e;
+  --mimi-page-kicker: #42575a;
+  --mimi-page-copy: #42575a;
+  --mimi-panel-dark-start: #edf0e8;
+  --mimi-panel-dark-end: #edf0e8;
+  --mimi-panel-dark-text: #1f322e;
+  --mimi-panel-dark-muted: #42575a;
+  --mimi-panel-dark-item-bg: #dbe5df;
+  --mimi-panel-dark-item-border: #c9d7ce;
+  --mimi-brand-hover-bg: #d7e5dd;
+  --mimi-shadow-jelly: 5px 9px 9px -7px rgba(255,241,232,0.6), 0 1px 2px rgba(46,71,61,0.18), 3px 10px 18px -9px rgba(112,164,145,0.3), 6px 22px 34px -18px rgba(221,183,153,0.22);
+  --mimi-shadow-jelly-press: 3px 5px 6px -5px rgba(255,241,232,0.56), 0 1px 1.5px rgba(46,71,61,0.2), 2px 4px 9px -4px rgba(112,164,145,0.28);
+  --mimi-shadow-soft: 0 1px 2px rgba(46,71,61,0.08), 0 3px 8px -2px rgba(46,71,61,0.08), 0 10px 20px -8px rgba(46,71,61,0.14);
+  --mimi-shadow-lift: 0 2px 4px rgba(46,71,61,0.08), 0 8px 16px -6px rgba(46,71,61,0.14), 0 18px 32px -14px rgba(46,71,61,0.22);
+  --mimi-shadow-dialog: 0 -2px 10px rgba(46,71,61,0.06), 0 -20px 48px -20px rgba(46,71,61,0.26);
+  --mimi-glass-shadow: 0 2px 6px rgba(46,71,61,0.06), 0 12px 28px -10px rgba(46,71,61,0.16), 0 28px 56px -24px rgba(46,71,61,0.26);
+  --mimi-shadow-well: inset 0 1px 2px rgba(46,71,61,0.1), inset 0 3px 6px -2px rgba(46,71,61,0.08);
   --mimi-rating-gloss: 0.5;
   --mimi-rating-forgot-bg: #ead8d0;
   --mimi-rating-forgot-top: #f3e6e0;
@@ -129,45 +129,45 @@
 }
 
 :root[data-mimi-theme="dark"] {
-  --background: #1d1a21;
-  --foreground: #efe9f2;
-  --mimi-bg: #1d1a21;
-  --mimi-canvas-glow: #2a2331;
-  --mimi-bg-deep: #17141a;
-  --mimi-bg-soft: #17141a;
-  --mimi-bg-panel: #3a2f46;
-  --mimi-surface: #27222c;
-  --mimi-surface-strong: #27222c;
-  --mimi-surface-muted: #17141a;
-  --mimi-primary: #cdbde4;
-  --mimi-primary-dark: #cdbde4;
-  --mimi-primary-deep: #efe6f8;
-  --mimi-primary-soft: #3a2f46;
-  --mimi-on-thumb: #efe6f8;
-  --mimi-state-primary: #8c78a8;
-  --mimi-on-primary: #241b2e;
+  --background: #0f1a18;
+  --foreground: #eef6f3;
+  --mimi-bg: #0f1a18;
+  --mimi-canvas-glow: #163a34;
+  --mimi-bg-deep: #0b1412;
+  --mimi-bg-soft: #0b1412;
+  --mimi-bg-panel: #2c4a43;
+  --mimi-surface: #1c2c27;
+  --mimi-surface-strong: #1c2c27;
+  --mimi-surface-muted: #0b1412;
+  --mimi-primary: #a6dacd;
+  --mimi-primary-dark: #a6dacd;
+  --mimi-primary-deep: #d3efe7;
+  --mimi-primary-soft: #2c4a43;
+  --mimi-on-thumb: #d3efe7;
+  --mimi-state-primary: #5aa596;
+  --mimi-on-primary: #0e2420;
   --mimi-on-state-primary: #fbf8fd;
-  --mimi-gel-top: #ded2ee;
-  --mimi-gel-mid: #c7b4dd;
-  --mimi-gel-bottom: #ab92cb;
-  --mimi-gel-blush: #eec4da;
-  --mimi-gel-glow: rgba(176,146,214,0.3);
+  --mimi-gel-top: #a9dccf;
+  --mimi-gel-mid: #79b5a9;
+  --mimi-gel-bottom: #5aa596;
+  --mimi-gel-blush: #d5b7a2;
+  --mimi-gel-glow: rgba(121,181,169,0.3);
   --mimi-gel-rim: rgba(255,255,255,0.72);
   --mimi-gel-edge: rgba(255,255,255,0.2);
-  --mimi-gel-depth: rgba(20,10,32,0.34);
-  --mimi-glass-fill: rgba(40,34,46,0.56);
+  --mimi-gel-depth: rgba(8,27,22,0.34);
+  --mimi-glass-fill: rgba(28,44,39,0.56);
   --mimi-glass-edge: rgba(255,255,255,0.2);
   --mimi-glass-shine: rgba(255,255,255,0.32);
   --mimi-glass-gloss: rgba(255,255,255,0.09);
-  --mimi-glass-depth: rgba(20,10,32,0.34);
+  --mimi-glass-depth: rgba(8,27,22,0.34);
   --mimi-secondary: #3b3330;
   --mimi-secondary-deep: #2e2725;
   --mimi-on-secondary: #f1e7df;
-  --mimi-mint-gel: #3a2f46;
-  --mimi-mint-ink: #efe6f8;
+  --mimi-mint-gel: #2c4a43;
+  --mimi-mint-ink: #d3efe7;
   --mimi-peach-gel: #3b3330;
   --mimi-peach-ink: #f1e7df;
-  --mimi-accent: #e5a8b7;
+  --mimi-accent: #d5b7a2;
   --mimi-amber: #3d3221;
   --mimi-amber-line: #e7c07a;
   --mimi-amber-soft: #3d3221;
@@ -177,30 +177,30 @@
   --mimi-danger-soft: #46272a;
   --mimi-danger-line: #f3a397;
   --mimi-danger-ink: #f3a397;
-  --mimi-border: #3a333f;
-  --mimi-border-strong: #887d8e;
-  --mimi-text: #efe9f2;
-  --mimi-text-soft: #b3a9b8;
-  --mimi-text-muted: #b3a9b8;
-  --mimi-focus: #cdbde4;
-  --mimi-focus-halo: rgba(205,189,228,0.24);
+  --mimi-border: #334b41;
+  --mimi-border-strong: #7c9187;
+  --mimi-text: #eef6f3;
+  --mimi-text-soft: #bfd0cc;
+  --mimi-text-muted: #bfd0cc;
+  --mimi-focus: #a6dacd;
+  --mimi-focus-halo: rgba(166,218,205,0.24);
   --mimi-backdrop: rgba(0,0,0,0.52);
-  --mimi-rail-text: #efe9f2;
-  --mimi-rail-strong: #efe9f2;
-  --mimi-rail-soft: #b3a9b8;
-  --mimi-nav-hover-bg: #3a2f46;
-  --mimi-page-heading: #efe9f2;
-  --mimi-page-kicker: #b3a9b8;
-  --mimi-page-copy: #b3a9b8;
-  --mimi-panel-dark-start: #27222c;
-  --mimi-panel-dark-end: #27222c;
-  --mimi-panel-dark-text: #efe9f2;
-  --mimi-panel-dark-muted: #b3a9b8;
-  --mimi-panel-dark-item-bg: #17141a;
-  --mimi-panel-dark-item-border: #3a333f;
-  --mimi-brand-hover-bg: #3a2f46;
-  --mimi-shadow-jelly: 5px 9px 9px -7px rgba(222,204,242,0.2), 0 1px 2px rgba(0,0,0,0.5), 3px 10px 18px -9px rgba(176,146,214,0.3), 6px 22px 34px -18px rgba(229,168,183,0.2);
-  --mimi-shadow-jelly-press: 3px 5px 6px -5px rgba(222,204,242,0.16), 0 1px 1.5px rgba(0,0,0,0.5), 2px 4px 9px -4px rgba(176,146,214,0.3);
+  --mimi-rail-text: #eef6f3;
+  --mimi-rail-strong: #eef6f3;
+  --mimi-rail-soft: #bfd0cc;
+  --mimi-nav-hover-bg: #2c4a43;
+  --mimi-page-heading: #eef6f3;
+  --mimi-page-kicker: #bfd0cc;
+  --mimi-page-copy: #bfd0cc;
+  --mimi-panel-dark-start: #1c2c27;
+  --mimi-panel-dark-end: #1c2c27;
+  --mimi-panel-dark-text: #eef6f3;
+  --mimi-panel-dark-muted: #bfd0cc;
+  --mimi-panel-dark-item-bg: #0b1412;
+  --mimi-panel-dark-item-border: #334b41;
+  --mimi-brand-hover-bg: #2c4a43;
+  --mimi-shadow-jelly: 5px 9px 9px -7px rgba(207,232,222,0.2), 0 1px 2px rgba(0,0,0,0.5), 3px 10px 18px -9px rgba(121,181,169,0.3), 6px 22px 34px -18px rgba(213,183,162,0.2);
+  --mimi-shadow-jelly-press: 3px 5px 6px -5px rgba(207,232,222,0.16), 0 1px 1.5px rgba(0,0,0,0.5), 2px 4px 9px -4px rgba(121,181,169,0.3);
   --mimi-shadow-soft: 0 1px 2px rgba(0,0,0,0.32), 0 3px 8px -2px rgba(0,0,0,0.28), 0 10px 20px -8px rgba(0,0,0,0.4);
   --mimi-shadow-lift: 0 2px 4px rgba(0,0,0,0.34), 0 8px 16px -6px rgba(0,0,0,0.4), 0 18px 32px -14px rgba(0,0,0,0.5);
   --mimi-shadow-dialog: 0 -2px 10px rgba(0,0,0,0.35), 0 -20px 48px -20px rgba(0,0,0,0.6);
@@ -312,13 +312,66 @@ select {
 }
 
 
-/* One quiet patch of lavender light. No continuous background animation. */
+/* The existing night glow stays quiet. No continuous background animation. */
 .mimi-mist {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background: radial-gradient(110% 70% at 88% -12%, var(--mimi-canvas-glow), transparent 62%);
+}
+
+/* Historical morning-mist colour fields; current component materials stay unchanged. */
+:root:not([data-mimi-theme="dark"]) .mimi-mist {
+  overflow: hidden;
+  background: none;
+  --mimi-field-1: #b4d6c0;
+  --mimi-field-2: #b9d5e4;
+  --mimi-field-3: #f3d3c0;
+}
+
+.mimi-mist-field {
+  display: none;
+  position: absolute;
+  border-radius: 48% 52% 60% 40% / 52% 44% 56% 48%;
+  filter: blur(64px);
+}
+
+:root:not([data-mimi-theme="dark"]) .mimi-mist-field {
+  display: block;
+}
+
+.mimi-mist-a {
+  top: -18vmax;
+  left: -20vmax;
+  width: 62vmax;
+  height: 58vmax;
+  background: var(--mimi-field-1);
+}
+
+.mimi-mist-b {
+  top: 26vh;
+  right: -24vmax;
+  width: 56vmax;
+  height: 60vmax;
+  background: var(--mimi-field-2);
+}
+
+.mimi-mist-c {
+  bottom: -22vmax;
+  left: -12vmax;
+  width: 54vmax;
+  height: 50vmax;
+  background: var(--mimi-field-3);
+}
+
+.mimi-mist-d {
+  right: -10vmax;
+  bottom: -12vmax;
+  width: 40vmax;
+  height: 40vmax;
+  background: var(--mimi-field-1);
+  opacity: 0.7;
 }
 
 /* Content rests on opaque, unlit surfaces: the words are the study screen's focal object. */
@@ -673,11 +726,16 @@ select {
 .mimi-focus-ring { outline: none; }
 .mimi-focus-ring:focus-visible { outline: 2px solid var(--mimi-focus); outline-offset: 3px; }
 
-/* Blend a little label ink into the same-hue focus outline so all four tones clear 3:1.
+/* Blend a little label ink into the focus outline while retaining the rating hue.
    Rating fills, borders and the persistent Enter-target lift stay unchanged. */
 .mimi-rating-button.mimi-focus-ring:focus-visible {
   outline-color: color-mix(in srgb, var(--mimi-rating-focus, var(--mimi-focus)) 85%, var(--mimi-rating-ink, var(--mimi-text)));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 14px 24px -12px var(--mimi-rating-glow, var(--mimi-glass-depth));
+}
+
+/* The stronger morning-mist fields need a deeper keyboard outline in the same hue. */
+:root:not([data-mimi-theme="dark"]) .mimi-rating-button.mimi-focus-ring:focus-visible {
+  outline-color: color-mix(in srgb, var(--mimi-rating-focus, var(--mimi-focus)) 65%, var(--mimi-rating-ink, var(--mimi-text)));
 }
 
 .mimi-pill {

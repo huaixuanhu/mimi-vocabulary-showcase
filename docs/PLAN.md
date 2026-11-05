@@ -12,7 +12,7 @@ Exit criteria: fresh dependency installation and relevant local checks pass; the
 
 ## 1. Current state
 
-The initial curated edition established the local-only and publication boundaries. The current maintenance task synchronizes the owner-selected Gentle Organic UI and adds synthetic README screenshots. The application, synthetic walkthrough, dependency patches, and bounded publication review have passed the checks recorded in [VALIDATION.md](VALIDATION.md). The release destination is [`huaixuanhu/mimi-vocabulary-showcase`](https://github.com/huaixuanhu/mimi-vocabulary-showcase), with independent Git history and reserved copyright.
+The current edition uses the accepted mist-garden colors with the existing jelly materials and four refreshed synthetic README screenshots. Implementation and local validation are complete; [VALIDATION.md](VALIDATION.md) records current checks separately from historical evidence. The source release destination is the existing `main` branch of [`huaixuanhu/mimi-vocabulary-showcase`](https://github.com/huaixuanhu/mimi-vocabulary-showcase), with independent Git history and reserved copyright. Git records the published commit and branch state.
 
 The original private repository remains outside the publication scope. This is a source-only portfolio release: no hosted app, cloud account connection, or automatic deployment workflow is included. The cat brand image is retained. The owner requested the UI synchronization and README screenshots on 2026-10-31, replacing the initial screenshot deferral.
 
@@ -37,3 +37,13 @@ Non-Scope: private history, credentials, study records or operating evidence; cl
 Exit criteria: the adapted showcase passes its own aggregate checks, synthetic browser walkthrough and bounded publication review; README images resolve; public source update contains only reviewed showcase material.
 
 The existing checkout was clean at entry. The task authorizes updating the public showcase source and README; it does not authorize deploying a hosted app. Current/target/working authority remains Tier 2 for the credential-free UI, with existing Tier 3 guards preserved. Implementation and credential-free validation are complete: 792 tests pass, one database test is skipped, and the aggregate build plus synthetic browser checks pass. The four requested screenshots are included. Publication follows the bounded final-file review recorded in VALIDATION.md.
+
+## 5. Mist-garden palette synchronization
+
+Source plan: this showcase maintenance plan, sections 1–3.
+Derived from: the owner's 2026-11-05 request to check the showcase and update it to the latest accepted interface.
+Scope: light/dark colors, four static light-theme background fields, the light-theme rating focus outline, the four existing synthetic screenshots, and their public design/validation records.
+Non-Scope: changed materials, fonts, rating fills, layout, learning behavior, dependency upgrades, private history or records, credentials, cloud/database/provider activation, and hosted deployment.
+Exit criteria: the showcase passes its aggregate local checks, bounded synthetic rendering/interaction checks, and public-file privacy review; refreshed README images resolve; the reviewed update is published to the existing public main branch.
+
+The local and remote main branch matched at entry, with no local changes. The owner authorized updating this existing public showcase. Current/target/working authority stays Tier 2 for the local UI; retained Tier 3 cloud/data guards remain unchanged. Only two runtime files changed: shared CSS and the shell's decorative background elements. Showcase storage names, device speech, the synthetic sample, lockfile, and service configuration remain unchanged. Implementation, four screenshot replacements, aggregate validation, and bounded publication review are complete. The existing public main branch is the approved publication target; no hosted application is included. The source-only publication and reserved-rights boundaries continue.

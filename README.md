@@ -14,13 +14,13 @@ Mimi Vocabulary combines two kinds of learning: recognizing a word when reading,
 - **A practical vocabulary library.** English–Chinese example pairs, editable imports, duplicate detection, search, archive, and explicit confirmations for deletion.
 - **Recovery-aware persistence.** Browser storage for the demo, a repository boundary for PostgreSQL, versioned backups, and tests for uncertain remote save outcomes.
 - **AI integration with limits.** Editable draft generation, provider adapters, caching, accounting, concurrency limits, and kill switches. Local fixture responses demonstrate parts of the flow without a paid AI request.
-- **A maintained visual system.** Gentle Organic jelly controls, warm paper reading surfaces, a cat illustration, light/dark themes, responsive navigation, and quiet interaction feedback.
+- **A maintained visual system.** Gentle Organic jelly controls, mist-garden colors, solid reading surfaces, a cat illustration, light/dark themes, responsive navigation, and quiet interaction feedback.
 
 The interesting engineering is in the boundaries between these features. Changing a learner is not authentication. A timeout does not prove a save failed. A generated draft does not become study data until the user accepts it. The [case study](docs/CASE_STUDY.md) follows those decisions into the source and tests.
 
 ## Interface
 
-Gentle Organic combines a warm paper canvas, readable solid cards, lavender jelly buttons, and frosted navigation. These captures use only the bundled synthetic vocabulary in local mode; they are examples of the interface, not real learning records.
+The mist-garden palette combines irregular green, mist-blue, and peach light fields with teal jelly buttons, readable solid cards, and frosted navigation. The backgrounds stay still, and the existing typography and four rating colors are retained. These captures use only the bundled synthetic vocabulary in local mode; they are examples of the interface, not real learning records.
 
 ![Home in the light theme with synthetic vocabulary](docs/screenshots/home-light.jpg)
 
